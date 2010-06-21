@@ -1,0 +1,33 @@
+Maintainr - A lazy developer utility
+===============================================================================
+
+Maintainr is an utility designed to easily maintain small projects and spread
+news about them.
+Permits to collect todos, update people about progresses via social networks
+such as identi.ca and gtk-apps.org, and share spare time among them accordly
+a not-so-randomic heuristic.
+
+Maintainr homepage is available at: http://maintainr.barberaware.org/
+
+REQUIREMENTS
+-------------------------------------------------------------------------------
+Maintainr depends on:
+
+  - libgtk2 >= 2.18.9
+  - libxml-2.0 >= 2.7.7
+  - twitter-glib >= 0.9.8
+  - libgrss >= 0.4
+  - libopengdesktop >= 0.4
+
+INSTALLATION
+-------------------------------------------------------------------------------
+./configure
+make
+sudo make install
+
+COPYRIGHT AND LICENSING
+-------------------------------------------------------------------------------
+Maintainr is released under the terms of the GNU General Public License,
+version 3 or, at your option, any later version.
+
+Maintainr is Copyright (C) 2010  Roberto Guido.
