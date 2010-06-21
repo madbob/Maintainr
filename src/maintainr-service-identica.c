@@ -205,7 +205,9 @@ static void maintainr_service_identica_class_init (MaintainrServiceIdenticaClass
 static void maintainr_service_identica_init (MaintainrServiceIdentica *item)
 {
 	item->priv = MAINTAINR_SERVICE_IDENTICA_GET_PRIVATE (item);
-	item->priv->client = g_object_new (TWITTER_TYPE_CLIENT, "provider", TWITTER_IDENTI_CA, "user-agent", "Maintainr", NULL);
+	item->priv->client = g_object_new (TWITTER_TYPE_CLIENT, "provider", TWITTER_IDENTI_CA,
+					   "base-url", "http://identi.ca/api",
+					   "user-agent", "Maintainr", NULL);
 }
 
 MaintainrServiceIdentica* maintainr_service_identica_new ()
