@@ -24,6 +24,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <math.h>
 
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>

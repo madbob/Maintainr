@@ -23,10 +23,35 @@
 
 struct _MaintainrShellPrivate {
 	GtkWidget *projects_box;
+	GtkWidget *status;
 	MaintainrConfig *conf;
 };
 
 G_DEFINE_TYPE (MaintainrShell, maintainr_shell, GTK_TYPE_VBOX);
+
+static void set_status (MaintainrShell *shell)
+{
+	gchar *status;
+	int days;
+	time_t since;
+	GList *projects;
+	GtkStatusbar *bar;
+	MaintainrProjectconf *top;
+
+	projects = maintainr_config_get_projects (shell->priv->conf);
+	top = projects->data;
+	bar = GTK_STATUSBAR (shell->priv->status);
+
+	since = maintainr_projectconf_get_top_since (top);
+	if (since != 0)
+		days = ceil (((double) time (NULL) - (double) since) / (double) 3600);
+	else
+		days = 0;
+
+	status = g_strdup_printf ("There are %d projects - %s on top since %d days",
+				  g_list_length (projects), maintainr_projectconf_get_name (top), days);
+	gtk_statusbar_push (bar, gtk_statusbar_get_context_id (bar, status), status);
+}
 
 static void move_to_top (MaintainrProjectbox *box, MaintainrShell *item)
 {
@@ -34,6 +59,7 @@ static void move_to_top (MaintainrProjectbox *box, MaintainrShell *item)
 
 	conf = maintainr_projectbox_get_conf (box);
 	maintainr_config_force_top (item->priv->conf, conf);
+	set_status (item);
 	maintainr_config_save (item->priv->conf);
 	gtk_box_reorder_child (GTK_BOX (item->priv->projects_box), GTK_WIDGET (box), 0);
 }
@@ -45,6 +71,7 @@ static void configuration_save_required (MaintainrProjectbox *box, MaintainrShel
 	conf = maintainr_projectbox_get_conf (box);
 	maintainr_config_add_project (item->priv->conf, conf);
 	maintainr_config_save (item->priv->conf);
+	set_status (item);
 }
 
 static void project_removed (MaintainrProjectbox *box, MaintainrShell *item)
@@ -55,6 +82,7 @@ static void project_removed (MaintainrProjectbox *box, MaintainrShell *item)
 	maintainr_config_delete_project (item->priv->conf, conf);
 	gtk_container_remove (GTK_CONTAINER (item->priv->projects_box), GTK_WIDGET (box));
 	maintainr_config_save (item->priv->conf);
+	set_status (item);
 }
 
 static GtkWidget* do_project_box (MaintainrShell *item)
@@ -112,6 +140,7 @@ static void skip_next_project (GtkButton *button, MaintainrShell *item)
 	}
 
 	maintainr_config_save (item->priv->conf);
+	set_status (item);
 }
 
 static void maintainr_shell_finalize (GObject *object)
@@ -139,10 +168,10 @@ static void maintainr_shell_init (MaintainrShell *item)
 	GtkWidget *button;
 
 	item->priv = MAINTAINR_SHELL_GET_PRIVATE (item);
-	gtk_box_set_spacing (GTK_BOX (item), 10);
+	gtk_box_set_spacing (GTK_BOX (item), 5);
 
 	gtk_box_set_homogeneous (GTK_BOX (item), FALSE);
-	gtk_container_set_border_width (GTK_CONTAINER (item), 10);
+	gtk_container_set_border_width (GTK_CONTAINER (item), 0);
 
 	buttons = gtk_hbox_new (TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (item), buttons, FALSE, FALSE, 0);
@@ -165,6 +194,9 @@ static void maintainr_shell_init (MaintainrShell *item)
 
 	item->priv->projects_box = gtk_vbox_new (FALSE, 10);
 	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scroll), item->priv->projects_box);
+
+	item->priv->status = gtk_statusbar_new ();
+	gtk_box_pack_start (GTK_BOX (item), item->priv->status, FALSE, FALSE, 0);
 }
 
 GtkWidget* maintainr_shell_new ()
@@ -186,6 +218,8 @@ void maintainr_shell_set_config (MaintainrShell *shell, MaintainrConfig *conf)
 		maintainr_projectbox_set_conf (MAINTAINR_PROJECTBOX (box), iter->data);
 		gtk_box_pack_start (GTK_BOX (shell->priv->projects_box), box, TRUE, TRUE, 0);
 	}
+
+	set_status (shell);
 }
 
 static gboolean scroll_in_projects (GtkAccelGroup *accel_group, GObject *acceleratable,

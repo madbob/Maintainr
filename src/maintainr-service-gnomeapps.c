@@ -61,7 +61,8 @@ static gchar* service_write_config (MaintainrService *service)
 	MaintainrServiceGnomeapps *self;
 
 	self = MAINTAINR_SERVICE_GNOMEAPPS (service);
-	return g_strdup_printf ("<username>%s</username><password>%s</password>", self->priv->username, self->priv->password);
+	return g_strdup_printf ("<contentid>%s</contentid><username>%s</username><password>%s</password>",
+				self->priv->contentid, self->priv->username, self->priv->password);
 }
 
 static void service_config_saved (MaintainrService *service)

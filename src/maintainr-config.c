@@ -149,12 +149,25 @@ void maintainr_config_add_project (MaintainrConfig *conf, MaintainrProjectconf *
 
 void maintainr_config_delete_project (MaintainrConfig *conf, MaintainrProjectconf *project)
 {
+	gboolean force;
 	GList *iter;
 
 	for (iter = conf->priv->projects; iter; iter = iter->next)
 		if (iter->data == project) {
+			force = FALSE;
+			if (iter == conf->priv->projects)
+				force = TRUE;
+
 			g_object_unref (iter->data);
 			conf->priv->projects = g_list_delete_link (conf->priv->projects, iter);
+
+			/*
+				This is to be sure to update number of days
+				on top for the new top project
+			*/
+			if (force == TRUE)
+				maintainr_projectconf_set_top_now (conf->priv->projects->data);
+
 			return;
 		}
 }
@@ -243,5 +256,6 @@ void maintainr_config_force_top (MaintainrConfig *conf, MaintainrProjectconf *pr
 	if (new_rank > g_list_length (conf->priv->projects) + 1)
 		low_all_ranks (conf);
 
+	maintainr_projectconf_set_top_now (project);
 	maintainr_config_sort_projects (conf);
 }

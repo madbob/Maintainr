@@ -28,6 +28,7 @@ struct _MaintainrProjectconfPrivate {
 	gchar *name;
 	PROJECT_PRIORITY priority;
 	int rank;
+	time_t top_since;
 	GList *todos;
 	GList *services;
 };
@@ -133,6 +134,10 @@ void maintainr_projectconf_read (MaintainrProjectconf *conf, xmlNode *node)
 			str = (gchar*) xmlNodeGetContent (iter);
 			conf->priv->rank = strtoll (str, NULL, 10);
 		}
+		else if (strcmp ((gchar*) iter->name, "on-top-since") == 0) {
+			str = (gchar*) xmlNodeGetContent (iter);
+			conf->priv->top_since = strtoll (str, NULL, 10);
+		}
 		else if (strcmp ((gchar*) iter->name, "todos") == 0) {
 			parse_todos (conf, iter);
 		}
@@ -174,6 +179,7 @@ gchar* maintainr_projectconf_write (MaintainrProjectconf *conf)
 	g_string_append_printf (ret, "\t<project-name>%s</project-name>\n", conf->priv->name);
 	g_string_append_printf (ret, "\t<priority>%d</priority>\n", conf->priv->priority);
 	g_string_append_printf (ret, "\t<rank>%d</rank>\n", conf->priv->rank);
+	g_string_append_printf (ret, "\t<on-top-since>%ld</on-top-since>\n", conf->priv->top_since);
 
 	for (iter = conf->priv->services; iter; iter = iter->next) {
 		str = maintainr_service_write_config (iter->data);
@@ -256,4 +262,14 @@ void maintainr_projectconf_sort_todos (MaintainrProjectconf *conf, GList *todos)
 GList* maintainr_projectconf_get_services (MaintainrProjectconf *conf)
 {
 	return conf->priv->services;
+}
+
+time_t maintainr_projectconf_get_top_since (MaintainrProjectconf *conf)
+{
+	return conf->priv->top_since;
+}
+
+void maintainr_projectconf_set_top_now (MaintainrProjectconf *conf)
+{
+	conf->priv->top_since = time (NULL);
 }
