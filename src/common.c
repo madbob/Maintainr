@@ -16,22 +16,16 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef COMMON_H
-#define COMMON_H
+#include "common.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <math.h>
+void activate_focus_management (GtkWidget *widget, gpointer user_data)
+{
+	GdkWindow *win;
 
-#include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
+	win = gtk_widget_get_window (widget);
+	gdk_window_set_events (win, gdk_window_get_events (win) | GDK_FOCUS_CHANGE_MASK | GDK_KEY_PRESS_MASK);
 
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-
-void	activate_focus_management (GtkWidget *widget, gpointer user_data);
-
-#endif
+	/**
+		TODO	Would be better to uninstall this handler once executed
+	*/
+}

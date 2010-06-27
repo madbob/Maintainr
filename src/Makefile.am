@@ -19,6 +19,7 @@ common_ldadd = \
 bin_PROGRAMS = maintainr
 
 maintainr_SOURCES = \
+	common.c			\
 	common.h			\
 	main.c				\
 	maintainr-config.c		\

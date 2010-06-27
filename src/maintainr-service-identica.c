@@ -36,7 +36,7 @@ struct _MaintainrServiceIdenticaPrivate {
 
 G_DEFINE_TYPE (MaintainrServiceIdentica, maintainr_service_identica, MAINTAINR_SERVICE_TYPE);
 
-static void send_status (GtkButton *button, MaintainrServiceIdentica *item)
+static void send_status (MaintainrServiceIdentica *item)
 {
 	gchar *text;
 	GtkTextBuffer *buffer;
@@ -135,6 +135,16 @@ static GtkWidget* service_config_panel (MaintainrService *service)
 	return self->priv->config_panel;
 }
 
+static gboolean manage_return (GtkWidget *widget, GdkEventKey *event, MaintainrServiceIdentica *item)
+{
+	if (event->keyval == GDK_Return) {
+		send_status (item);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 static GtkWidget* service_action_panel (MaintainrService *service)
 {
 	MaintainrServiceIdentica *self;
@@ -150,6 +160,9 @@ static GtkWidget* service_action_panel (MaintainrService *service)
 		/**
 			TODO	Provide inline URL shorter
 		*/
+
+		g_signal_connect (self->priv->message, "realize", G_CALLBACK (activate_focus_management), NULL);
+		g_signal_connect (self->priv->message, "key-press-event", G_CALLBACK (manage_return), self);
 	}
 
 	return self->priv->action_panel;
@@ -165,7 +178,7 @@ static GtkWidget* service_action_buttons (MaintainrService *service)
 	button = gtk_button_new ();
 	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_APPLY, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Send this status change and back to the main screen");
-	g_signal_connect (button, "clicked", G_CALLBACK (send_status), self);
+	g_signal_connect_swapped (button, "clicked", G_CALLBACK (send_status), self);
 
 	return button;
 }
