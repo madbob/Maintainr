@@ -63,6 +63,7 @@ int			maintainr_projectconf_get_rank (MaintainrProjectconf *conf);
 void			maintainr_projectconf_set_rank (MaintainrProjectconf *conf, int rank);
 GList*			maintainr_projectconf_get_todos (MaintainrProjectconf *conf);
 void			maintainr_projectconf_set_todos (MaintainrProjectconf *conf, GList *todos);
+void			maintainr_projectconf_sort_todos (MaintainrProjectconf *conf, GList *todos);
 GList*			maintainr_projectconf_get_services (MaintainrProjectconf *conf);
 
 #endif

@@ -109,6 +109,9 @@ static void parse_todos (MaintainrProjectconf *conf, xmlNode *node)
 			conf->priv->todos = g_list_prepend (conf->priv->todos, t);
 		}
 	}
+
+	if (conf->priv->todos != NULL)
+		conf->priv->todos = g_list_reverse (conf->priv->todos);
 }
 
 void maintainr_projectconf_read (MaintainrProjectconf *conf, xmlNode *node)
@@ -242,6 +245,11 @@ void maintainr_projectconf_set_todos (MaintainrProjectconf *conf, GList *todos)
 		g_list_free (conf->priv->todos);
 	}
 
+	conf->priv->todos = todos;
+}
+
+void maintainr_projectconf_sort_todos (MaintainrProjectconf *conf, GList *todos)
+{
 	conf->priv->todos = todos;
 }
 

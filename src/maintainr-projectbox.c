@@ -110,12 +110,17 @@ static void todo_check_changed (GtkCellRendererToggle *cell_renderer, gchar *pat
 
 static void todo_string_changed (GtkCellRendererText *renderer, gchar *path, gchar *new_text, MaintainrProjectbox *item)
 {
+	int pos;
 	GtkTreeModel *model;
 	GtkTreeIter iter;
 
 	model = gtk_tree_view_get_model (GTK_TREE_VIEW (item->priv->todos));
 	gtk_tree_model_get_iter_from_string (model, &iter, path);
 	gtk_list_store_set (GTK_LIST_STORE (model), &iter, 1, new_text, -1);
+
+	gtk_tree_model_get (model, &iter, 2, &pos, -1);
+	if (pos == -1)
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2, G_MAXINT, -1);
 
 	g_signal_emit (item, signals [CONF_CHANGE], 0, NULL);
 }
@@ -129,7 +134,7 @@ static void add_todo (MaintainrProjectbox *item)
 
 	todos = GTK_TREE_VIEW (item->priv->todos);
 	model = gtk_tree_view_get_model (todos);
-	gtk_list_store_insert_with_values (GTK_LIST_STORE (model), &iter, G_MAXINT, 0, FALSE, 1, "Edit me!", -1);
+	gtk_list_store_insert_with_values (GTK_LIST_STORE (model), &iter, G_MAXINT, 0, FALSE, 1, "Edit me!", 2, -1, -1);
 
 	path = gtk_tree_model_get_path (model, &iter);
 	gtk_widget_grab_focus (item->priv->todos);
@@ -272,6 +277,40 @@ static gboolean edit_todo_shortcuts (GtkWidget *widget, GdkEventKey *event, Main
 	return FALSE;
 }
 
+static void check_if_sorted (GtkWidget *widget, GdkDragContext *drag_context, MaintainrProjectbox *item)
+{
+	gchar *text;
+	GList *cursor;
+	GList *todos;
+	GList *new_todos;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+
+	model = gtk_tree_view_get_model (GTK_TREE_VIEW (item->priv->todos));
+	todos = maintainr_projectconf_get_todos (item->priv->conf);
+	new_todos = NULL;
+
+	if (gtk_tree_model_get_iter_first (model, &iter) == TRUE) {
+		do {
+			gtk_tree_model_get (model, &iter, 1, &text, -1);
+
+			for (cursor = todos; cursor; cursor = cursor->next) {
+				if (strcmp (maintainr_todo_get_string (cursor->data), text) == 0) {
+					todos = g_list_remove_link (todos, cursor);
+					new_todos = g_list_concat (new_todos, cursor);
+					break;
+				}
+			}
+
+			g_free (text);
+
+		} while (gtk_tree_model_iter_next (model, &iter) == TRUE);
+	}
+
+	maintainr_projectconf_sort_todos (item->priv->conf, new_todos);
+	g_signal_emit (item, signals [CONF_CHANGE], 0, NULL);
+}
+
 static GtkWidget* do_todos (MaintainrProjectbox *item)
 {
 	GtkWidget *scroll;
@@ -289,11 +328,13 @@ static GtkWidget* do_todos (MaintainrProjectbox *item)
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 	gtk_box_pack_start (GTK_BOX (hbox), scroll, TRUE, TRUE, 0);
 
-	model = gtk_list_store_new (2, G_TYPE_BOOLEAN, G_TYPE_STRING);
+	model = gtk_list_store_new (3, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_INT);
 	item->priv->todos = gtk_tree_view_new_with_model (GTK_TREE_MODEL (model));
 	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scroll), item->priv->todos);
 
 	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (item->priv->todos), FALSE);
+
+	gtk_tree_view_set_reorderable (GTK_TREE_VIEW (item->priv->todos), TRUE);
 
 	renderer = gtk_cell_renderer_toggle_new ();
 	gtk_cell_renderer_toggle_set_activatable (GTK_CELL_RENDERER_TOGGLE (renderer), TRUE);
@@ -441,6 +482,7 @@ static GtkWidget* do_service_action_panel (MaintainrProjectbox *box, MaintainrSe
 
 void maintainr_projectbox_set_conf (MaintainrProjectbox *box, MaintainrProjectconf *conf)
 {
+	int pos;
 	const gchar *name;
 	gboolean active;
 	GList *iter;
@@ -468,11 +510,12 @@ void maintainr_projectbox_set_conf (MaintainrProjectbox *box, MaintainrProjectco
 
 	model = gtk_tree_view_get_model (GTK_TREE_VIEW (box->priv->todos));
 
-	for (iter = maintainr_projectconf_get_todos (conf); iter; iter = iter->next) {
+	for (pos = 0, iter = maintainr_projectconf_get_todos (conf); iter; pos++, iter = iter->next) {
 		todo = iter->data;
 		gtk_list_store_insert_with_values (GTK_LIST_STORE (model), NULL, G_MAXINT,
 						   0, maintainr_todo_get_done (todo),
-						   1, maintainr_todo_get_string (todo), -1);
+						   1, maintainr_todo_get_string (todo),
+						   2, pos, -1);
 	}
 
 	for (iter = maintainr_projectconf_get_services (conf); iter; iter = iter->next) {
@@ -505,6 +548,9 @@ void maintainr_projectbox_set_conf (MaintainrProjectbox *box, MaintainrProjectco
 
 		g_signal_connect_swapped (service, "require-main-screen", G_CALLBACK (show_main), box);
 	}
+
+	if (g_signal_handler_find (box->priv->todos, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, G_CALLBACK (check_if_sorted), box) == 0)
+		g_signal_connect (box->priv->todos, "drag-end", G_CALLBACK (check_if_sorted), box);
 }
 
 MaintainrProjectconf* maintainr_projectbox_get_conf (MaintainrProjectbox *box)

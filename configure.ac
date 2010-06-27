@@ -18,7 +18,7 @@ m4_define([lt_age],
 m4_define([gtk_req_version], [2.10.0])
 m4_define([xml_req_version], [2.7.4])
 m4_define([grss_req_version], [0.4.0])
-m4_define([opengdesktop_req_version], [0.3.0])
+m4_define([opengdesktop_req_version], [0.4.0])
 m4_define([twitter_req_version], [0.9.9])
 
 AC_PREREQ([2.59])
