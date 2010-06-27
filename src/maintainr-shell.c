@@ -163,7 +163,7 @@ static void maintainr_shell_init (MaintainrShell *item)
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 	gtk_box_pack_start (GTK_BOX (item), scroll, TRUE, TRUE, 0);
 
-	item->priv->projects_box = gtk_vbox_new (TRUE, 10);
+	item->priv->projects_box = gtk_vbox_new (FALSE, 10);
 	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scroll), item->priv->projects_box);
 }
 

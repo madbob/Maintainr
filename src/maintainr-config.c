@@ -174,7 +174,7 @@ void maintainr_config_step_projects (MaintainrConfig *conf)
 {
 	int i;
 	int min_rank;
-	int priority;
+	PROJECT_PRIORITY priority;
 	MaintainrProjectconf *next_project;
 	MaintainrProjectconf *iter_project;
 	GList *iter;
@@ -186,8 +186,8 @@ void maintainr_config_step_projects (MaintainrConfig *conf)
 	min_rank = G_MAXINT;
 	priority = maintainr_projectconf_get_priority (conf->priv->projects->data);
 
-	for (i = 0; i < 3; i++) {
-		priority = (priority + 1) % 3;
+	for (i = 0; i < PROJECT_PRIORITY_END; i++) {
+		priority = (priority + 1) % PROJECT_PRIORITY_END;
 
 		for (iter = conf->priv->projects; iter; iter = iter->next) {
 			iter_project = iter->data;

@@ -26,7 +26,7 @@
 
 struct _MaintainrProjectconfPrivate {
 	gchar *name;
-	int priority;
+	PROJECT_PRIORITY priority;
 	int rank;
 	GList *todos;
 	GList *services;
@@ -70,7 +70,7 @@ static void maintainr_projectconfig_class_init (MaintainrProjectconfClass *klass
 static void maintainr_projectconfig_init (MaintainrProjectconf *item)
 {
 	item->priv = MAINTAINR_PROJECTCONF_GET_PRIVATE (item);
-	item->priv->priority = 1;
+	item->priv->priority = PROJECT_PRIORITY_MEDIUM;
 
 	item->priv->services = g_list_prepend (item->priv->services, maintainr_service_alerts_new ());
 	item->priv->services = g_list_prepend (item->priv->services, maintainr_service_gnomeapps_new ());
@@ -210,12 +210,12 @@ void maintainr_projectconf_set_name (MaintainrProjectconf *conf, gchar *name)
 	conf->priv->name = g_strdup (name);
 }
 
-int maintainr_projectconf_get_priority (MaintainrProjectconf *conf)
+PROJECT_PRIORITY maintainr_projectconf_get_priority (MaintainrProjectconf *conf)
 {
 	return conf->priv->priority;
 }
 
-void maintainr_projectconf_set_priority (MaintainrProjectconf *conf, int priority)
+void maintainr_projectconf_set_priority (MaintainrProjectconf *conf, PROJECT_PRIORITY priority)
 {
 	conf->priv->priority = priority;
 }

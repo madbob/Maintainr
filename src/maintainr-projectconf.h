@@ -50,6 +50,13 @@ struct _MaintainrProjectconfClass {
 	GObjectClass		parent_class;
 };
 
+typedef enum {
+	PROJECT_PRIORITY_HIGH,
+	PROJECT_PRIORITY_MEDIUM,
+	PROJECT_PRIORITY_LOW,
+	PROJECT_PRIORITY_END
+} PROJECT_PRIORITY;
+
 GType			maintainr_projectconfig_get_type ();
 
 MaintainrProjectconf*	maintainr_projectconf_new ();
@@ -57,8 +64,8 @@ void			maintainr_projectconf_read (MaintainrProjectconf *conf, xmlNode *node);
 gchar*			maintainr_projectconf_write (MaintainrProjectconf *conf);
 const gchar*		maintainr_projectconf_get_name (MaintainrProjectconf *conf);
 void			maintainr_projectconf_set_name (MaintainrProjectconf *conf, gchar *name);
-int			maintainr_projectconf_get_priority (MaintainrProjectconf *conf);
-void			maintainr_projectconf_set_priority (MaintainrProjectconf *conf, int priority);
+PROJECT_PRIORITY	maintainr_projectconf_get_priority (MaintainrProjectconf *conf);
+void			maintainr_projectconf_set_priority (MaintainrProjectconf *conf, PROJECT_PRIORITY priority);
 int			maintainr_projectconf_get_rank (MaintainrProjectconf *conf);
 void			maintainr_projectconf_set_rank (MaintainrProjectconf *conf, int rank);
 GList*			maintainr_projectconf_get_todos (MaintainrProjectconf *conf);

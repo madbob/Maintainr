@@ -18,6 +18,7 @@
 
 #include "maintainr-projectbox.h"
 #include "maintainr-todo.h"
+#include "maintainr-icons.h"
 
 #define MAINTAINR_PROJECTBOX_GET_PRIVATE(obj)       (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MAINTAINR_PROJECTBOX_TYPE, MaintainrProjectboxPrivate))
 
@@ -28,6 +29,7 @@ struct _MaintainrProjectboxPrivate {
 	GtkWidget *todos;
 	GtkWidget *services_buttons;
 
+	GtkWidget *priority_icon;
 	GtkWidget *project_name;
 	GtkWidget *priority;
 	GtkWidget *services_confs;
@@ -82,11 +84,33 @@ static void hide_and_show_services (MaintainrProjectbox *item)
 	}
 }
 
+static void set_priority_icon (MaintainrProjectbox *box, PROJECT_PRIORITY priority)
+{
+	switch (priority) {
+		case PROJECT_PRIORITY_HIGH:
+			gtk_image_set_from_pixbuf (GTK_IMAGE (box->priv->priority_icon),
+						   gdk_pixbuf_new_from_xpm_data (red_xpm));
+			break;
+
+		case PROJECT_PRIORITY_MEDIUM:
+			gtk_image_set_from_pixbuf (GTK_IMAGE (box->priv->priority_icon),
+						   gdk_pixbuf_new_from_xpm_data (yellow_xpm));
+			break;
+
+		case PROJECT_PRIORITY_LOW:
+		default:
+			gtk_image_set_from_pixbuf (GTK_IMAGE (box->priv->priority_icon),
+						   gdk_pixbuf_new_from_xpm_data (green_xpm));
+			break;
+	}
+}
+
 static void save_conf (GtkButton *button, MaintainrProjectbox *item)
 {
 	GList *iter;
 
 	gtk_label_set_text (GTK_LABEL (item->priv->label), gtk_entry_get_text (GTK_ENTRY (item->priv->project_name)));
+	set_priority_icon (item, gtk_combo_box_get_active (GTK_COMBO_BOX (item->priv->priority)));
 	show_main (item);
 
 	for (iter = maintainr_projectconf_get_services (item->priv->conf); iter; iter = iter->next)
@@ -224,6 +248,9 @@ static GtkWidget* do_head (MaintainrProjectbox *item)
 
 	hbox = gtk_hbox_new (FALSE, 0);
 
+	item->priv->priority_icon = gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_xpm_data (yellow_xpm));
+	gtk_box_pack_start (GTK_BOX (hbox), item->priv->priority_icon, FALSE, FALSE, 0);
+
 	item->priv->label = gtk_label_new ("Untitled");
 	gtk_box_pack_start (GTK_BOX (hbox), item->priv->label, TRUE, TRUE, 0);
 
@@ -313,7 +340,6 @@ static void check_if_sorted (GtkWidget *widget, GdkDragContext *drag_context, Ma
 
 static GtkWidget* do_todos (MaintainrProjectbox *item)
 {
-	GtkWidget *scroll;
 	GtkWidget *hbox;
 	GtkWidget *vbox;
 	GtkWidget *button;
@@ -324,16 +350,11 @@ static GtkWidget* do_todos (MaintainrProjectbox *item)
 
 	hbox = gtk_hbox_new (FALSE, 0);
 
-	scroll = gtk_scrolled_window_new (NULL, NULL);
-	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-	gtk_box_pack_start (GTK_BOX (hbox), scroll, TRUE, TRUE, 0);
-
 	model = gtk_list_store_new (3, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_INT);
 	item->priv->todos = gtk_tree_view_new_with_model (GTK_TREE_MODEL (model));
-	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scroll), item->priv->todos);
+	gtk_box_pack_start (GTK_BOX (hbox), item->priv->todos, TRUE, TRUE, 0);
 
 	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (item->priv->todos), FALSE);
-
 	gtk_tree_view_set_reorderable (GTK_TREE_VIEW (item->priv->todos), TRUE);
 
 	renderer = gtk_cell_renderer_toggle_new ();
@@ -399,7 +420,7 @@ static GtkWidget* do_config (MaintainrProjectbox *item)
 	gtk_box_pack_start (GTK_BOX (vbox), item->priv->priority, FALSE, FALSE, 0);
 
 	item->priv->services_confs = gtk_hbox_new (FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), item->priv->services_confs, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), item->priv->services_confs, TRUE, TRUE, 0);
 
 	hbox = gtk_hbox_new (TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
@@ -497,16 +518,14 @@ void maintainr_projectbox_set_conf (MaintainrProjectbox *box, MaintainrProjectco
 	box->priv->conf = conf;
 	name = maintainr_projectconf_get_name (conf);
 
-	/**
-		TODO	Add a colored icon in header accordly priority of the project
-	*/
-
 	if (name != NULL) {
 		gtk_label_set_text (GTK_LABEL (box->priv->label), name);
 		gtk_entry_set_text (GTK_ENTRY (box->priv->project_name), name);
 	}
 
-	gtk_combo_box_set_active (GTK_COMBO_BOX (box->priv->priority), maintainr_projectconf_get_priority (conf));
+	pos = maintainr_projectconf_get_priority (conf);
+	gtk_combo_box_set_active (GTK_COMBO_BOX (box->priv->priority), pos);
+	set_priority_icon (box, pos);
 
 	model = gtk_tree_view_get_model (GTK_TREE_VIEW (box->priv->todos));
 

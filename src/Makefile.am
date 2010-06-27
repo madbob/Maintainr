@@ -23,6 +23,7 @@ maintainr_SOURCES = \
 	main.c				\
 	maintainr-config.c		\
 	maintainr-config.h		\
+	maintainr-icons.h		\
 	maintainr-projectbox.c		\
 	maintainr-projectbox.h		\
 	maintainr-projectconf.c		\
