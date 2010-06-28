@@ -23,7 +23,7 @@ void activate_focus_management (GtkWidget *widget, gpointer user_data)
 	GdkWindow *win;
 
 	win = gtk_widget_get_window (widget);
-	gdk_window_set_events (win, gdk_window_get_events (win) | GDK_FOCUS_CHANGE_MASK | GDK_KEY_PRESS_MASK);
+	gdk_window_set_events (win, gdk_window_get_events (win) | GDK_FOCUS_CHANGE_MASK | GDK_KEY_PRESS_MASK | GDK_EXPOSURE_MASK);
 
 	/**
 		TODO	Would be better to uninstall this handler once executed

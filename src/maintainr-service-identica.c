@@ -28,6 +28,7 @@ struct _MaintainrServiceIdenticaPrivate {
 	GtkWidget *password_entry;
 
 	GtkWidget *message;
+	GtkWidget *state;
 	TwitterClient *client;
 
 	GtkWidget *config_panel;
@@ -36,24 +37,34 @@ struct _MaintainrServiceIdenticaPrivate {
 
 G_DEFINE_TYPE (MaintainrServiceIdentica, maintainr_service_identica, MAINTAINR_SERVICE_TYPE);
 
-static void send_status (MaintainrServiceIdentica *item)
+static gchar* get_status_text (MaintainrServiceIdentica *item)
 {
-	gchar *text;
 	GtkTextBuffer *buffer;
 	GtkTextIter start;
 	GtkTextIter end;
 
+	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (item->priv->message));
+
+	gtk_text_buffer_get_start_iter (buffer, &start);
+	gtk_text_buffer_get_end_iter (buffer, &end);
+	return gtk_text_buffer_get_text (buffer, &start, &end, TRUE);
+}
+
+static void send_status (MaintainrServiceIdentica *item)
+{
+	gchar *text;
+	GtkTextBuffer *buffer;
+
 	if (item->priv->client != NULL && maintainr_service_get_active (MAINTAINR_SERVICE (item))) {
-		buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (item->priv->message));
+		text = get_status_text (item);
 
-		gtk_text_buffer_get_start_iter (buffer, &start);
-		gtk_text_buffer_get_end_iter (buffer, &end);
-		text = gtk_text_buffer_get_text (buffer, &start, &end, TRUE);
-
-		if (text != NULL && strlen (text) > 0) {
+		if (strlen (text) > 0) {
 			twitter_client_add_status (item->priv->client, text);
+			buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (item->priv->message));
 			gtk_text_buffer_set_text (buffer, "", -1);
 		}
+
+		g_free (text);
 	}
 
 	g_signal_emit_by_name (MAINTAINR_SERVICE (item), "require-main-screen", NULL);
@@ -137,16 +148,49 @@ static GtkWidget* service_config_panel (MaintainrService *service)
 
 static gboolean manage_return (GtkWidget *widget, GdkEventKey *event, MaintainrServiceIdentica *item)
 {
-	if (event->keyval == GDK_Return) {
+	if (event != NULL && event->keyval == GDK_Return)
 		send_status (item);
-		return TRUE;
-	}
 
 	return FALSE;
 }
 
+static gboolean move_chars_count (GtkWidget *widget, GdkEventExpose *event, MaintainrServiceIdentica *item)
+{
+	GtkAllocation parent;
+	GtkAllocation child;
+
+	gtk_widget_get_allocation (item->priv->message, &parent);
+	gtk_widget_get_allocation (item->priv->state, &child);
+
+	gtk_text_view_move_child (GTK_TEXT_VIEW (item->priv->message), gtk_widget_get_parent (item->priv->state),
+				  parent.width - child.width - 10, parent.height - child.height - 10);
+
+	return FALSE;
+}
+
+static void manage_chars_count (GtkTextBuffer *textbuffer, MaintainrServiceIdentica *item)
+{
+	gchar text [500];
+	gchar *status;
+
+	status = get_status_text (item);
+
+	status = get_status_text (item);
+	snprintf (text, 500, "<span weight=\"bold\" size=\"xx-large\" foreground=\"#000000\" background=\"#FFFFFF\">%ld</span>", 140 - strlen (status));
+	gtk_label_set_markup (GTK_LABEL (item->priv->state), text);
+	g_free (status);
+}
+
+static void check_url (GtkTextView *text_view, gchar *string, gpointer user_data)
+{
+	/**
+		TODO	Provide inline URL shorter
+	*/
+}
+
 static GtkWidget* service_action_panel (MaintainrService *service)
 {
+	GtkWidget *event_box;
 	MaintainrServiceIdentica *self;
 
 	self = MAINTAINR_SERVICE_IDENTICA (service);
@@ -155,14 +199,29 @@ static GtkWidget* service_action_panel (MaintainrService *service)
 		self->priv->action_panel = gtk_vbox_new (FALSE, 0);
 
 		self->priv->message = gtk_text_view_new ();
+		gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (self->priv->message), GTK_WRAP_WORD_CHAR);
 		gtk_box_pack_start (GTK_BOX (self->priv->action_panel), self->priv->message, TRUE, TRUE, 0);
 
-		/**
-			TODO	Provide inline URL shorter
+		/*
+			Due unclear reasons I was not able to simply put the
+			GtkLabel in GtkTextView, so I've just used an
+			GtkEventBox as wrapper as managed in GTK+ tests found
+			in repository
 		*/
+		self->priv->state = gtk_label_new ("");
+		gtk_label_set_markup (GTK_LABEL (self->priv->state), "<span weight=\"bold\" size=\"xx-large\" foreground=\"#000000\" background=\"#FFFFFF\">140</span>");
+		event_box = gtk_event_box_new ();
+		gtk_container_add (GTK_CONTAINER (event_box), self->priv->state);
+		gtk_widget_show_all (event_box);
+		gtk_text_view_add_child_in_window (GTK_TEXT_VIEW (self->priv->message), event_box, GTK_TEXT_WINDOW_LEFT, 0, 0);
 
 		g_signal_connect (self->priv->message, "realize", G_CALLBACK (activate_focus_management), NULL);
+		g_signal_connect (self->priv->message, "expose-event", G_CALLBACK (move_chars_count), self);
 		g_signal_connect (self->priv->message, "key-press-event", G_CALLBACK (manage_return), self);
+		g_signal_connect (self->priv->message, "insert-at-cursor", G_CALLBACK (check_url), self);
+
+		g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW (self->priv->message)),
+				  "changed", G_CALLBACK (manage_chars_count), self);
 	}
 
 	return self->priv->action_panel;
