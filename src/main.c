@@ -30,6 +30,7 @@ int main (int argc, char **argv) {
 
 	g_log_set_always_fatal (G_LOG_LEVEL_WARNING | G_LOG_LEVEL_CRITICAL);
 
+	maintainr_config_handle_backup ();
 	config = maintainr_config_read_configuration ();
 	if (config == NULL)
 		exit (1);

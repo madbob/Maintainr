@@ -18,6 +18,8 @@
 
 #include "maintainr-config.h"
 
+#define MAX_BACKUP_COPIES			5
+
 #define MAINTAINR_CONFIG_GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE ((obj), MAINTAINR_CONFIG_TYPE, MaintainrConfigPrivate))
 
 struct _MaintainrConfigPrivate {
@@ -58,6 +60,98 @@ static void maintainr_config_init (MaintainrConfig *item)
 static gchar* conf_file_path ()
 {
 	return g_build_filename (g_get_user_config_dir (), "Maintainr", "conf.xml", NULL);
+}
+
+static void remove_old_copies (gchar *original_path)
+{
+	int i;
+	gchar *pattern;
+	glob_t globbuf;
+
+	pattern = g_strdup_printf ("%s.*", original_path);
+	globbuf.gl_offs = 0;
+	glob (pattern, 0, NULL, &globbuf);
+
+	if (globbuf.gl_pathc > MAX_BACKUP_COPIES) {
+		for (i = 0; i < (globbuf.gl_pathc - MAX_BACKUP_COPIES); i++)
+			remove (globbuf.gl_pathv [i]);
+	}
+
+	globfree (&globbuf);
+}
+
+static gpointer manage_backups (gpointer user_data)
+{
+	gchar date [100];
+	gchar *original_path;
+	gchar *original_contents;
+	gchar *copy_path;
+	int original_fd;
+	int copy_fd;
+	time_t now_t;
+	struct tm now_tm;
+	gboolean fail;
+	GIOChannel *original_stream;
+	GIOChannel *copy_stream;
+	GError *error;
+
+	original_path = user_data;
+	remove_old_copies (original_path);
+
+	original_fd = open (original_path, O_RDONLY);
+	if (original_fd == -1) {
+		g_warning ("Unable to open original file: %s", strerror (errno));
+		g_free (original_path);
+		return NULL;
+	}
+
+	original_stream = g_io_channel_unix_new (original_fd);
+	error = NULL;
+	fail = FALSE;
+
+	if (g_io_channel_read_to_end (original_stream, &original_contents, NULL, &error) == G_IO_STATUS_ERROR) {
+		g_warning ("Unable to read original file: %s", error->message);
+		g_error_free (error);
+		fail = TRUE;
+	}
+
+	g_io_channel_unref (original_stream);
+
+	if (fail == TRUE) {
+		g_free (original_path);
+		return NULL;
+	}
+
+	now_t = time (NULL);
+	localtime_r (&now_t, &now_tm);
+	strftime (date, 100, "%Y%m%d%H%M%S", &now_tm);
+	copy_path = g_strdup_printf ("%s.%s.bkp", original_path, date);
+	g_free (original_path);
+
+	copy_fd = open (copy_path, O_WRONLY | O_CREAT, 0644);
+	if (copy_fd == -1) {
+		g_warning ("Unable to open copy file: %s", strerror (errno));
+		g_free (copy_path);
+		g_free (original_contents);
+		return NULL;
+	}
+
+	copy_stream = g_io_channel_unix_new (copy_fd);
+	g_io_channel_write_chars (copy_stream, original_contents, -1, NULL, NULL);
+	g_io_channel_unref (copy_stream);
+	g_free (copy_path);
+	g_free (original_contents);
+
+	return NULL;
+}
+
+void maintainr_config_handle_backup ()
+{
+	gchar *path;
+
+	path = conf_file_path ();
+	if (access (path, F_OK) == 0)
+		g_thread_create (manage_backups, path, FALSE, NULL);
 }
 
 MaintainrConfig* maintainr_config_read_configuration ()

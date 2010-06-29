@@ -25,6 +25,10 @@
 #include <unistd.h>
 #include <errno.h>
 #include <math.h>
+#include <glob.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>

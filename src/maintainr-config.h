@@ -52,6 +52,7 @@ struct _MaintainrConfigClass {
 
 GType			maintainr_config_get_type ();
 
+void			maintainr_config_handle_backup ();
 MaintainrConfig*	maintainr_config_read_configuration ();
 void			maintainr_config_save (MaintainrConfig *conf);
 

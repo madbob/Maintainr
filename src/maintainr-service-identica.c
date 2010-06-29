@@ -19,6 +19,9 @@
 #include "maintainr-service-identica.h"
 #include <twitter-glib/twitter-glib.h>
 
+#define MAX_CHARS_IN_STATUS		140
+#define CHAR_COUNTER_MARKUP		"<span weight=\"bold\" size=\"xx-large\" foreground=\"#000000\" background=\"#FFFFFF\">%ld</span>"
+
 #define MAINTAINR_SERVICE_IDENTICA_GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE ((obj), MAINTAINR_SERVICE_IDENTICA_TYPE, MaintainrServiceIdenticaPrivate))
 
 struct _MaintainrServiceIdenticaPrivate {
@@ -176,7 +179,7 @@ static void manage_chars_count (GtkTextBuffer *textbuffer, MaintainrServiceIdent
 	status = get_status_text (item);
 
 	status = get_status_text (item);
-	snprintf (text, 500, "<span weight=\"bold\" size=\"xx-large\" foreground=\"#000000\" background=\"#FFFFFF\">%ld</span>", 140 - strlen (status));
+	snprintf (text, 500, CHAR_COUNTER_MARKUP, MAX_CHARS_IN_STATUS - strlen (status));
 	gtk_label_set_markup (GTK_LABEL (item->priv->state), text);
 	g_free (status);
 }
@@ -190,6 +193,7 @@ static void check_url (GtkTextView *text_view, gchar *string, gpointer user_data
 
 static GtkWidget* service_action_panel (MaintainrService *service)
 {
+	gchar *text;
 	GtkWidget *event_box;
 	MaintainrServiceIdentica *self;
 
@@ -209,7 +213,11 @@ static GtkWidget* service_action_panel (MaintainrService *service)
 			in repository
 		*/
 		self->priv->state = gtk_label_new ("");
-		gtk_label_set_markup (GTK_LABEL (self->priv->state), "<span weight=\"bold\" size=\"xx-large\" foreground=\"#000000\" background=\"#FFFFFF\">140</span>");
+
+		text = g_strdup_printf (CHAR_COUNTER_MARKUP, MAX_CHARS_IN_STATUS);
+		gtk_label_set_markup (GTK_LABEL (self->priv->state), text);
+		g_free (text);
+
 		event_box = gtk_event_box_new ();
 		gtk_container_add (GTK_CONTAINER (event_box), self->priv->state);
 		gtk_widget_show_all (event_box);
