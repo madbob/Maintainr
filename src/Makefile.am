@@ -35,8 +35,6 @@ maintainr_SOURCES = \
 	maintainr-service-gnomeapps.c	\
 	maintainr-service-gnomeapps.h	\
 	maintainr-service.h		\
-	maintainr-service-identica.c	\
-	maintainr-service-identica.h	\
 	maintainr-shell.c		\
 	maintainr-shell.h		\
 	maintainr-todo.c		\

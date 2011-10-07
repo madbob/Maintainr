@@ -39,6 +39,9 @@ static void set_status (MaintainrShell *shell)
 	MaintainrProjectconf *top;
 
 	projects = maintainr_config_get_projects (shell->priv->conf);
+	if (projects == NULL)
+		return;
+
 	top = projects->data;
 	bar = GTK_STATUSBAR (shell->priv->status);
 

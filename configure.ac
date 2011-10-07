@@ -19,7 +19,6 @@ m4_define([gtk_req_version], [2.10.0])
 m4_define([xml_req_version], [2.7.4])
 m4_define([grss_req_version], [0.4.0])
 m4_define([opengdesktop_req_version], [0.4.0])
-m4_define([twitter_req_version], [0.9.9])
 
 AC_PREREQ([2.59])
 AC_INIT([maintainr], [maintainr_version], [], [maintainr])
@@ -54,8 +53,7 @@ PKG_CHECK_MODULES(MAINTAINR,
                   gtk+-2.0 >= gtk_req_version dnl
                   libxml-2.0 >= xml_req_version dnl
                   libgrss-0 >= grss_req_version dnl
-                  libopengdesktop-0 >= opengdesktop_req_version dnl
-                  twitter-glib-1.0 >= twitter_req_version)
+                  libopengdesktop-0 >= opengdesktop_req_version)
 AC_SUBST(MAINTAINR_CFLAGS)
 AC_SUBST(MAINTAINR_LIBS)
 

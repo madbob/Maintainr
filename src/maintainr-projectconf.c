@@ -18,7 +18,6 @@
 
 #include "maintainr-projectconf.h"
 #include "maintainr-todo.h"
-#include "maintainr-service-identica.h"
 #include "maintainr-service-gnomeapps.h"
 #include "maintainr-service-alerts.h"
 
@@ -75,7 +74,6 @@ static void maintainr_projectconfig_init (MaintainrProjectconf *item)
 
 	item->priv->services = g_list_prepend (item->priv->services, maintainr_service_alerts_new ());
 	item->priv->services = g_list_prepend (item->priv->services, maintainr_service_gnomeapps_new ());
-	item->priv->services = g_list_prepend (item->priv->services, maintainr_service_identica_new ());
 }
 
 MaintainrProjectconf* maintainr_projectconf_new ()
