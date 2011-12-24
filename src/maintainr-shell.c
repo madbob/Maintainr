@@ -23,11 +23,29 @@
 
 struct _MaintainrShellPrivate {
 	GtkWidget *projects_box;
+	GtkWidget *empty_notification;
 	GtkWidget *status;
 	MaintainrConfig *conf;
 };
 
 G_DEFINE_TYPE (MaintainrShell, maintainr_shell, GTK_TYPE_VBOX);
+
+static void set_empty_screen (MaintainrShell *item)
+{
+	item->priv->empty_notification = gtk_label_new ("");
+	gtk_label_set_markup (GTK_LABEL (item->priv->empty_notification), "There are no projects registered.\nClick the + button to add a new one.");
+	gtk_label_set_use_markup (GTK_LABEL (item->priv->empty_notification), TRUE);
+	gtk_label_set_justify (GTK_LABEL (item->priv->empty_notification), GTK_JUSTIFY_CENTER);
+	gtk_box_pack_start (GTK_BOX (item->priv->projects_box), item->priv->empty_notification, TRUE, TRUE, 10);
+	gtk_widget_show (item->priv->empty_notification);
+}
+
+static void remove_empty_screen (MaintainrShell *item) {
+	if (item->priv->empty_notification != NULL) {
+		gtk_container_remove (GTK_CONTAINER (item->priv->projects_box), GTK_WIDGET (item->priv->empty_notification));
+		item->priv->empty_notification = NULL;
+	}
+}
 
 static void set_status (MaintainrShell *shell)
 {
@@ -38,21 +56,26 @@ static void set_status (MaintainrShell *shell)
 	GtkStatusbar *bar;
 	MaintainrProjectconf *top;
 
-	projects = maintainr_config_get_projects (shell->priv->conf);
-	if (projects == NULL)
-		return;
-
-	top = projects->data;
 	bar = GTK_STATUSBAR (shell->priv->status);
 
-	since = maintainr_projectconf_get_top_since (top);
-	if (since != 0)
-		days = ceil (((double) time (NULL) - (double) since) / (double) 3600);
-	else
-		days = 0;
+	projects = maintainr_config_get_projects (shell->priv->conf);
 
-	status = g_strdup_printf ("There are %d projects - %s on top since %d days",
-				  g_list_length (projects), maintainr_projectconf_get_name (top), days);
+	if (projects == NULL) {
+		status = "No registered projects";
+	}
+	else {
+		top = projects->data;
+
+		since = maintainr_projectconf_get_top_since (top);
+		if (since != 0)
+			days = ceil (((double) time (NULL) - (double) since) / (double) 3600);
+		else
+			days = 0;
+
+		status = g_strdup_printf ("There are %d projects - %s on top since %d days",
+					  g_list_length (projects), maintainr_projectconf_get_name (top), days);
+	}
+
 	gtk_statusbar_push (bar, gtk_statusbar_get_context_id (bar, status), status);
 }
 
@@ -85,6 +108,10 @@ static void project_removed (MaintainrProjectbox *box, MaintainrShell *item)
 	maintainr_config_delete_project (item->priv->conf, conf);
 	gtk_container_remove (GTK_CONTAINER (item->priv->projects_box), GTK_WIDGET (box));
 	maintainr_config_save (item->priv->conf);
+
+	if (maintainr_config_get_projects_num (item->priv->conf) == 0)
+		set_empty_screen (item);
+
 	set_status (item);
 }
 
@@ -104,11 +131,13 @@ static void add_new_project (GtkButton *button, MaintainrShell *item)
 	GtkWidget *box;
 	GtkWidget *scrolled;
 
+	remove_empty_screen (item);
+
 	box = do_project_box (item);
 	maintainr_projectbox_set_conf (MAINTAINR_PROJECTBOX (box), maintainr_projectconf_new ());
 	gtk_widget_show_all (box);
 
-	gtk_box_pack_start (GTK_BOX (item->priv->projects_box), box, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (item->priv->projects_box), box, TRUE, TRUE, 10);
 	gtk_box_reorder_child (GTK_BOX (item->priv->projects_box), box, 0);
 
 	/*
@@ -118,6 +147,8 @@ static void add_new_project (GtkButton *button, MaintainrShell *item)
 	gtk_adjustment_set_value (gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (scrolled)), 0);
 
 	maintainr_projectbox_set_editing_mode (MAINTAINR_PROJECTBOX (box));
+
+	set_status (item);
 }
 
 static void skip_next_project (GtkButton *button, MaintainrShell *item)
@@ -177,25 +208,26 @@ static void maintainr_shell_init (MaintainrShell *item)
 	gtk_container_set_border_width (GTK_CONTAINER (item), 0);
 
 	buttons = gtk_hbox_new (TRUE, 0);
-	gtk_box_pack_start (GTK_BOX (item), buttons, FALSE, FALSE, 0);
+	gtk_container_set_border_width (GTK_CONTAINER (buttons), 10);
+	gtk_box_pack_start (GTK_BOX (item), buttons, FALSE, FALSE, 10);
 
 	button = gtk_button_new ();
 	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Create a new project");
-	gtk_box_pack_start (GTK_BOX (buttons), button, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (buttons), button, TRUE, TRUE, 10);
 	g_signal_connect (button, "clicked", G_CALLBACK (add_new_project), item);
 
 	button = gtk_button_new ();
 	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_INDEX, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Push on top the next project by priority");
-	gtk_box_pack_start (GTK_BOX (buttons), button, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (buttons), button, TRUE, TRUE, 10);
 	g_signal_connect (button, "clicked", G_CALLBACK (skip_next_project), item);
 
 	scroll = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 	gtk_box_pack_start (GTK_BOX (item), scroll, TRUE, TRUE, 0);
 
-	item->priv->projects_box = gtk_vbox_new (FALSE, 10);
+	item->priv->projects_box = gtk_vbox_new (FALSE, 0);
 	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scroll), item->priv->projects_box);
 
 	item->priv->status = gtk_statusbar_new ();
@@ -216,10 +248,17 @@ void maintainr_shell_set_config (MaintainrShell *shell, MaintainrConfig *conf)
 	shell->priv->conf = conf;
 	projects = maintainr_config_get_projects (conf);
 
-	for (iter = projects; iter; iter = iter->next) {
-		box = do_project_box (shell);
-		maintainr_projectbox_set_conf (MAINTAINR_PROJECTBOX (box), iter->data);
-		gtk_box_pack_start (GTK_BOX (shell->priv->projects_box), box, TRUE, TRUE, 0);
+	if (projects == NULL || g_list_length (projects) == 0) {
+		set_empty_screen (shell);
+	}
+	else {
+		remove_empty_screen (shell);
+
+		for (iter = projects; iter; iter = iter->next) {
+			box = do_project_box (shell);
+			maintainr_projectbox_set_conf (MAINTAINR_PROJECTBOX (box), iter->data);
+			gtk_box_pack_start (GTK_BOX (shell->priv->projects_box), box, TRUE, TRUE, 10);
+		}
 	}
 
 	set_status (shell);
@@ -248,7 +287,7 @@ GtkAccelGroup* maintainr_shell_get_shortcuts (MaintainrShell *shell)
 	GtkAccelGroup *group;
 
 	group = gtk_accel_group_new ();
-	gtk_accel_group_connect (group, GDK_Up, GDK_CONTROL_MASK, 0, g_cclosure_new (G_CALLBACK (scroll_in_projects), shell, NULL));
-	gtk_accel_group_connect (group, GDK_Down, GDK_CONTROL_MASK, 0, g_cclosure_new (G_CALLBACK (scroll_in_projects), shell, NULL));
+	gtk_accel_group_connect (group, GDK_KEY_Up, GDK_CONTROL_MASK, 0, g_cclosure_new (G_CALLBACK (scroll_in_projects), shell, NULL));
+	gtk_accel_group_connect (group, GDK_KEY_Down, GDK_CONTROL_MASK, 0, g_cclosure_new (G_CALLBACK (scroll_in_projects), shell, NULL));
 	return group;
 }

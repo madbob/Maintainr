@@ -24,7 +24,7 @@
 struct _MaintainrServiceAlertsPrivate {
 	gchar *url;
 	GtkWidget *url_entry;
-	FeedsPool *pool;
+	GrssFeedsPool *pool;
 
 	GtkWidget *view;
 
@@ -34,7 +34,7 @@ struct _MaintainrServiceAlertsPrivate {
 
 G_DEFINE_TYPE (MaintainrServiceAlerts, maintainr_service_alerts, MAINTAINR_SERVICE_TYPE);
 
-static void alerts_fetched (FeedsPool *pool, FeedChannel *channel, GList *items, MaintainrServiceAlerts *alerts)
+static void alerts_fetched (GrssFeedsPool *pool, GrssFeedChannel *channel, GList *items, MaintainrServiceAlerts *alerts)
 {
 	const gchar *id;
 	gchar *existing_id;
@@ -42,13 +42,13 @@ static void alerts_fetched (FeedsPool *pool, FeedChannel *channel, GList *items,
 	GList *items_iter;
 	GtkTreeModel *model;
 	GtkTreeIter iter;
-	FeedItem *it;
+	GrssFeedItem *it;
 
 	model = gtk_tree_view_get_model (GTK_TREE_VIEW (alerts->priv->view));
 
 	for (items_iter = items; items_iter; items_iter = items_iter->next) {
 		it = items_iter->data;
-		id = feed_item_get_id (it);
+		id = grss_feed_item_get_id (it);
 		has = FALSE;
 
 		if (gtk_tree_model_get_iter_first (model, &iter) == TRUE) {
@@ -65,7 +65,7 @@ static void alerts_fetched (FeedsPool *pool, FeedChannel *channel, GList *items,
 
 		if (has == FALSE) {
 			gtk_list_store_insert_with_values (GTK_LIST_STORE (model), NULL, 0,
-							   0, id, 1, feed_item_get_title (it), 2, feed_item_get_source (it), -1);
+							   0, id, 1, grss_feed_item_get_title (it), 2, grss_feed_item_get_source (it), -1);
 		}
 	}
 }
@@ -73,27 +73,27 @@ static void alerts_fetched (FeedsPool *pool, FeedChannel *channel, GList *items,
 static void run_scheduler (MaintainrServiceAlerts *item)
 {
 	GList *channel;
-	FeedChannel *c;
+	GrssFeedChannel *c;
 
 	if (item->priv->url == NULL || strlen (item->priv->url) == 0) {
-		feeds_pool_switch (item->priv->pool, FALSE);
+		grss_feeds_pool_switch (item->priv->pool, FALSE);
 	}
 	else {
-		feeds_pool_switch (item->priv->pool, FALSE);
+		grss_feeds_pool_switch (item->priv->pool, FALSE);
 
-		channel = feeds_pool_get_listened (item->priv->pool);
+		channel = grss_feeds_pool_get_listened (item->priv->pool);
 
 		if (channel == NULL) {
-			c = feed_channel_new ();
+			c = grss_feed_channel_new ();
 			channel = g_list_prepend (channel, c);
-			feeds_pool_listen (item->priv->pool, channel);
+			grss_feeds_pool_listen (item->priv->pool, channel);
 		}
 		else {
 			c = channel->data;
 		}
 
-		feed_channel_set_source (c, item->priv->url);
-		feeds_pool_switch (item->priv->pool, TRUE);
+		grss_feed_channel_set_source (c, item->priv->url);
+		grss_feeds_pool_switch (item->priv->pool, TRUE);
 	}
 }
 
@@ -249,7 +249,7 @@ static void maintainr_service_alerts_init (MaintainrServiceAlerts *item)
 {
 	item->priv = MAINTAINR_SERVICE_ALERTS_GET_PRIVATE (item);
 
-	item->priv->pool = feeds_pool_new ();
+	item->priv->pool = grss_feeds_pool_new ();
 	g_signal_connect (item->priv->pool, "feed-ready", G_CALLBACK (alerts_fetched), item);
 }
 

@@ -57,6 +57,7 @@ MaintainrConfig*	maintainr_config_read_configuration ();
 void			maintainr_config_save (MaintainrConfig *conf);
 
 GList*			maintainr_config_get_projects (MaintainrConfig *conf);
+int			maintainr_config_get_projects_num (MaintainrConfig *conf);
 void			maintainr_config_add_project (MaintainrConfig *conf, MaintainrProjectconf *project);
 void			maintainr_config_delete_project (MaintainrConfig *conf, MaintainrProjectconf *project);
 void			maintainr_config_sort_projects (MaintainrConfig *conf);

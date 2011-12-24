@@ -229,6 +229,11 @@ GList* maintainr_config_get_projects (MaintainrConfig *conf)
 	return conf->priv->projects;
 }
 
+int maintainr_config_get_projects_num (MaintainrConfig *conf)
+{
+	return g_list_length (conf->priv->projects);
+}
+
 void maintainr_config_add_project (MaintainrConfig *conf, MaintainrProjectconf *project)
 {
 	GList *iter;
@@ -259,8 +264,12 @@ void maintainr_config_delete_project (MaintainrConfig *conf, MaintainrProjectcon
 				This is to be sure to update number of days
 				on top for the new top project
 			*/
-			if (force == TRUE)
-				maintainr_projectconf_set_top_now (conf->priv->projects->data);
+			if (force == TRUE) {
+				if (conf->priv->projects != NULL)
+					maintainr_projectconf_set_top_now (conf->priv->projects->data);
+				else
+					maintainr_projectconf_set_top_now (NULL);
+			}
 
 			return;
 		}

@@ -269,5 +269,6 @@ time_t maintainr_projectconf_get_top_since (MaintainrProjectconf *conf)
 
 void maintainr_projectconf_set_top_now (MaintainrProjectconf *conf)
 {
-	conf->priv->top_since = time (NULL);
+	if (conf != NULL)
+		conf->priv->top_since = time (NULL);
 }

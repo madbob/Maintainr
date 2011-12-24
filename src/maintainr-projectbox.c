@@ -208,9 +208,6 @@ static void activate_service (GtkButton *button, MaintainrProjectbox *item)
 
 static void maintainr_projectbox_finalize (GObject *object)
 {
-	MaintainrProjectbox *shell;
-
-	shell = MAINTAINR_PROJECTBOX (object);
 }
 
 static void maintainr_projectbox_class_init (MaintainrProjectboxClass *klass)
@@ -280,11 +277,11 @@ static gboolean unselect_all_todos (GtkWidget *widget, GdkEventFocus *event, gpo
 
 static gboolean edit_todo_shortcuts (GtkWidget *widget, GdkEventKey *event, MaintainrProjectbox *item)
 {
-	if (event->keyval == GDK_plus) {
+	if (event->keyval == GDK_KEY_plus) {
 		add_todo (item);
 		return TRUE;
 	}
-	else if (event->keyval == GDK_minus) {
+	else if (event->keyval == GDK_KEY_minus) {
 		remove_todo (item);
 		return TRUE;
 	}
@@ -393,43 +390,43 @@ static GtkWidget* do_config (MaintainrProjectbox *item)
 	GtkWidget *hbox;
 	GtkWidget *button;
 
-	vbox = gtk_vbox_new (FALSE, 0);
+	vbox = gtk_vbox_new (FALSE, 10);
 
 	item->priv->project_name = gtk_entry_new ();
 	gtk_widget_set_tooltip_text (item->priv->project_name, "Name of the project");
 	gtk_entry_set_text (GTK_ENTRY (item->priv->project_name), "Untitled");
 	gtk_box_pack_start (GTK_BOX (vbox), item->priv->project_name, FALSE, FALSE, 0);
 
-	item->priv->priority = gtk_combo_box_new_text ();
+	item->priv->priority = gtk_combo_box_text_new ();
 	gtk_widget_set_tooltip_text (item->priv->priority, "Change priority for this project");
-	gtk_combo_box_append_text (GTK_COMBO_BOX (item->priv->priority), "High");
-	gtk_combo_box_append_text (GTK_COMBO_BOX (item->priv->priority), "Medium");
-	gtk_combo_box_append_text (GTK_COMBO_BOX (item->priv->priority), "Low");
+	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (item->priv->priority), NULL, "High");
+	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (item->priv->priority), NULL, "Medium");
+	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (item->priv->priority), NULL, "Low");
 	gtk_box_pack_start (GTK_BOX (vbox), item->priv->priority, FALSE, FALSE, 0);
 
-	item->priv->services_confs = gtk_hbox_new (FALSE, 0);
+	item->priv->services_confs = gtk_hbox_new (FALSE, 10);
 	gtk_box_pack_start (GTK_BOX (vbox), item->priv->services_confs, TRUE, TRUE, 0);
 
-	hbox = gtk_hbox_new (TRUE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+	hbox = gtk_hbox_new (TRUE, 10);
+	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 10);
 
 	button = gtk_button_new ();
 	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_DELETE, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Remove this project from the list");
 	g_signal_connect (button, "clicked", G_CALLBACK (delete_project), item);
-	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 10);
 
 	button = gtk_button_new ();
 	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_SAVE, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Save settings and back to the main screen");
 	g_signal_connect (button, "clicked", G_CALLBACK (save_conf), item);
-	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 10);
 
 	button = gtk_button_new ();
 	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_CANCEL, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Back to the main screen without saving");
 	g_signal_connect_swapped (button, "clicked", G_CALLBACK (show_main), item);
-	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 10);
 
 	return vbox;
 }
@@ -440,6 +437,7 @@ static void maintainr_projectbox_init (MaintainrProjectbox *item)
 
 	item->priv = MAINTAINR_PROJECTBOX_GET_PRIVATE (item);
 
+	gtk_container_set_border_width (GTK_CONTAINER (item), 20);
 	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (item), FALSE);
 
 	mainbox = gtk_vbox_new (FALSE, 0);
@@ -530,7 +528,7 @@ void maintainr_projectbox_set_conf (MaintainrProjectbox *box, MaintainrProjectco
 		name = maintainr_service_get_name (service);
 
 		frame = gtk_frame_new ("");
-		gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+		gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
 		active = maintainr_service_get_active (service);
 		checkbox = gtk_check_button_new_with_label (name);
 		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbox), active);
@@ -538,7 +536,7 @@ void maintainr_projectbox_set_conf (MaintainrProjectbox *box, MaintainrProjectco
 		panel = maintainr_service_config_panel (service);
 		gtk_widget_set_sensitive (panel, active);
 		gtk_container_add (GTK_CONTAINER (frame), panel);
-		gtk_box_pack_start (GTK_BOX (box->priv->services_confs), frame, FALSE, FALSE, 0);
+		gtk_box_pack_start (GTK_BOX (box->priv->services_confs), frame, FALSE, FALSE, 10);
 		g_signal_connect (checkbox, "toggled", G_CALLBACK (activate_service_conf_panel), service);
 
 		gtk_notebook_append_page (GTK_NOTEBOOK (box), do_service_action_panel (box, service), NULL);
