@@ -36,7 +36,7 @@ int main (int argc, char **argv) {
 		exit (1);
 
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size (GTK_WINDOW (window), 500, 500);
+	gtk_window_set_default_size (GTK_WINDOW (window), 300, 500);
 	g_signal_connect (window, "delete-event", G_CALLBACK (gtk_main_quit), NULL);
 
 	shell = maintainr_shell_new ();

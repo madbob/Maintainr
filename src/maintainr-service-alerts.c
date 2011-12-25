@@ -153,6 +153,11 @@ static void service_config_saved (MaintainrService *service)
 	run_scheduler (self);
 }
 
+static void toggle_active_service (GtkEntry *text, MaintainrService *service)
+{
+	maintainr_service_set_active (service, strlen (gtk_entry_get_text (text)) != 0);
+}
+
 static GtkWidget* service_config_panel (MaintainrService *service)
 {
 	MaintainrServiceAlerts *self;
@@ -164,6 +169,8 @@ static GtkWidget* service_config_panel (MaintainrService *service)
 		gtk_container_set_border_width (GTK_CONTAINER (self->priv->config_panel), 10);
 
 		self->priv->url_entry = gtk_entry_new ();
+		g_signal_connect (G_OBJECT (self->priv->url_entry), "paste-clipboard", G_CALLBACK (toggle_active_service), service);
+		g_signal_connect (G_OBJECT (self->priv->url_entry), "backspace", G_CALLBACK (toggle_active_service), service);
 		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), gtk_label_new ("URL"), 0, 1, 0, 1);
 		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), self->priv->url_entry, 1, 2, 0, 1);
 

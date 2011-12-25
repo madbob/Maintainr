@@ -24,6 +24,7 @@ struct _MaintainrServiceGnomeappsPrivate {
 	gchar *contentid;
 	gchar *username;
 	gchar *password;
+	GtkWidget *active;
 	GtkWidget *id_entry;
 	GtkWidget *username_entry;
 	GtkWidget *password_entry;
@@ -36,7 +37,7 @@ G_DEFINE_TYPE (MaintainrServiceGnomeapps, maintainr_service_gnomeapps, MAINTAINR
 
 static const gchar* service_get_name (MaintainrService *service)
 {
-	return "gtk-apps";
+	return "gtk-apps.org";
 }
 
 static void service_read_config (MaintainrService *service, xmlNode *node)
@@ -84,6 +85,11 @@ static void service_config_saved (MaintainrService *service)
 	self->priv->password = g_strdup (gtk_entry_get_text (GTK_ENTRY (self->priv->password_entry)));
 }
 
+static void toggle_active_service (GtkToggleButton *button, MaintainrService *service)
+{
+	maintainr_service_set_active (service, gtk_toggle_button_get_active (button));
+}
+
 static GtkWidget* service_config_panel (MaintainrService *service)
 {
 	MaintainrServiceGnomeapps *self;
@@ -91,21 +97,28 @@ static GtkWidget* service_config_panel (MaintainrService *service)
 	self = MAINTAINR_SERVICE_GNOMEAPPS (service);
 
 	if (self->priv->config_panel == NULL) {
-		self->priv->config_panel = gtk_table_new (3, 2, FALSE);
+		self->priv->config_panel = gtk_table_new (4, 2, FALSE);
 		gtk_container_set_border_width (GTK_CONTAINER (self->priv->config_panel), 10);
 
+		self->priv->active = gtk_check_button_new ();
+		g_signal_connect (G_OBJECT (self->priv->active), "toggled", G_CALLBACK (toggle_active_service), service);
+		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), gtk_label_new ("Enable"), 0, 1, 0, 1);
+		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), self->priv->active, 1, 2, 0, 1);
+
 		self->priv->id_entry = gtk_entry_new ();
-		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), gtk_label_new ("Content ID"), 0, 1, 0, 1);
-		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), self->priv->id_entry, 1, 2, 0, 1);
+		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), gtk_label_new ("Content ID"), 0, 1, 1, 2);
+		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), self->priv->id_entry, 1, 2, 1, 2);
 
 		self->priv->username_entry = gtk_entry_new ();
-		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), gtk_label_new ("Username"), 0, 1, 1, 2);
-		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), self->priv->username_entry, 1, 2, 1, 2);
+		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), gtk_label_new ("Username"), 0, 1, 2, 3);
+		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), self->priv->username_entry, 1, 2, 2, 3);
 
 		self->priv->password_entry = gtk_entry_new ();
 		gtk_entry_set_visibility (GTK_ENTRY (self->priv->password_entry), FALSE);
-		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), gtk_label_new ("Password"), 0, 1, 2, 3);
-		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), self->priv->password_entry, 1, 2, 2, 3);
+		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), gtk_label_new ("Password"), 0, 1, 3, 4);
+		gtk_table_attach_defaults (GTK_TABLE (self->priv->config_panel), self->priv->password_entry, 1, 2, 3, 4);
+
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->priv->active), maintainr_service_get_active (service));
 
 		if (self->priv->contentid != NULL)
 			gtk_entry_set_text (GTK_ENTRY (self->priv->id_entry), self->priv->contentid);
