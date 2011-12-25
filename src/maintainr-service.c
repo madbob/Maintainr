@@ -107,7 +107,7 @@ GtkWidget* maintainr_service_action_panel (MaintainrService *service)
 		return NULL;
 }
 
-GtkWidget* maintainr_service_action_buttons (MaintainrService *service)
+GList* maintainr_service_action_buttons (MaintainrService *service)
 {
 	if (MAINTAINR_SERVICE_GET_CLASS (service)->action_buttons != NULL)
 		return MAINTAINR_SERVICE_GET_CLASS (service)->action_buttons (service);

@@ -314,19 +314,14 @@ static void check_if_sorted (GtkWidget *widget, GdkDragContext *drag_context, Ma
 
 static GtkWidget* do_todos (MaintainrProjectbox *item)
 {
-	GtkWidget *hbox;
-	GtkWidget *vbox;
-	GtkWidget *button;
 	GtkListStore *model;
 	GtkCellRenderer *renderer;
 	GtkTreeViewColumn *col;
 	GtkTreeSelection *selection;
 
-	hbox = gtk_hbox_new (FALSE, 0);
-
 	model = gtk_list_store_new (3, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_INT);
 	item->priv->todos = gtk_tree_view_new_with_model (GTK_TREE_MODEL (model));
-	gtk_box_pack_start (GTK_BOX (hbox), item->priv->todos, TRUE, TRUE, 0);
+	gtk_widget_set_tooltip_text (item->priv->todos, "Press '+' to add an item, '-' to remove the selected one");
 
 	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (item->priv->todos), FALSE);
 	gtk_tree_view_set_reorderable (GTK_TREE_VIEW (item->priv->todos), TRUE);
@@ -349,22 +344,7 @@ static GtkWidget* do_todos (MaintainrProjectbox *item)
 	g_signal_connect (item->priv->todos, "focus-out-event", G_CALLBACK (unselect_all_todos), NULL);
 	g_signal_connect (item->priv->todos, "key-press-event", G_CALLBACK (edit_todo_shortcuts), item);
 
-	vbox = gtk_vbox_new (TRUE, 0);
-	gtk_box_pack_start (GTK_BOX (hbox), vbox, FALSE, FALSE, 0);
-
-	button = gtk_button_new ();
-	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_BUTTON));
-	gtk_widget_set_tooltip_text (button, "Add a new todo item to the list (+)");
-	g_signal_connect_swapped (button, "clicked", G_CALLBACK (add_todo), item);
-	gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, TRUE, 0);
-
-	button = gtk_button_new ();
-	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_REMOVE, GTK_ICON_SIZE_BUTTON));
-	gtk_widget_set_tooltip_text (button, "Remove the selected todo item from the list (-)");
-	g_signal_connect_swapped (button, "clicked", G_CALLBACK (remove_todo), item);
-	gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, TRUE, 0);
-
-	return hbox;
+	return item->priv->todos;
 }
 
 static GtkWidget* do_buttons (MaintainrProjectbox *item)
@@ -456,6 +436,8 @@ void maintainr_projectbox_set_editing_mode (MaintainrProjectbox *box)
 
 static GtkWidget* do_service_action_panel (MaintainrProjectbox *box, MaintainrService *service)
 {
+	GList *sbuttons;
+	GList *iter;
 	GtkWidget *frame;
 	GtkWidget *panel;
 	GtkWidget *buttons;
@@ -468,11 +450,12 @@ static GtkWidget* do_service_action_panel (MaintainrProjectbox *box, MaintainrSe
 	buttons = gtk_hbox_new (TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (frame), buttons, FALSE, FALSE, 0);
 
-	button = maintainr_service_action_buttons (service);
-	if (button != NULL)
-		gtk_box_pack_start (GTK_BOX (buttons), button, TRUE, TRUE, 0);
-	else
-		gtk_box_pack_start (GTK_BOX (buttons), gtk_label_new (maintainr_service_get_name (service)), TRUE, TRUE, 0);
+	sbuttons = maintainr_service_action_buttons (service);
+	if (sbuttons != NULL) {
+		for (iter = sbuttons; iter != NULL; iter = iter->next)
+			gtk_box_pack_start (GTK_BOX (buttons), (GtkWidget*) iter->data, TRUE, TRUE, 0);
+		g_list_free (sbuttons);
+	}
 
 	button = gtk_button_new ();
 	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_CANCEL, GTK_ICON_SIZE_BUTTON));

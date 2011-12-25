@@ -56,7 +56,7 @@ struct _MaintainrServiceClass {
 	void (*config_saved) (MaintainrService *service);
 	GtkWidget* (*config_panel) (MaintainrService *service);
 	GtkWidget* (*action_panel) (MaintainrService *service);
-	GtkWidget* (*action_buttons) (MaintainrService *service);
+	GList* (*action_buttons) (MaintainrService *service);
 };
 
 GType		maintainr_service_get_type ();
@@ -69,6 +69,6 @@ gchar*		maintainr_service_write_config (MaintainrService *service);
 void		maintainr_service_config_saved (MaintainrService *service);
 GtkWidget*	maintainr_service_config_panel (MaintainrService *service);
 GtkWidget*	maintainr_service_action_panel (MaintainrService *service);
-GtkWidget*	maintainr_service_action_buttons (MaintainrService *service);
+GList*		maintainr_service_action_buttons (MaintainrService *service);
 
 #endif

@@ -217,7 +217,7 @@ static GtkWidget* service_action_panel (MaintainrService *service)
 	return self->priv->action_panel;
 }
 
-static GtkWidget* service_action_buttons (MaintainrService *service)
+static GList* service_action_buttons (MaintainrService *service)
 {
 	return NULL;
 }
