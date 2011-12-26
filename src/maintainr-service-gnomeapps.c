@@ -32,6 +32,10 @@ struct _MaintainrServiceGnomeappsPrivate {
 	GtkWidget *username_entry;
 	GtkWidget *password_entry;
 
+	int num_fans;
+	int num_comments;
+	int num_downloads;
+
 	GtkWidget *config_panel;
 	GtkWidget *action_panel;
 };
@@ -81,19 +85,87 @@ static void empty_action_panel (MaintainrServiceGnomeapps *self)
 	g_list_free (children);
 }
 
+static void update_visible_data (MaintainrService *service)
+{
+	gchar *string;
+	MaintainrServiceGnomeapps *self;
+
+	self = MAINTAINR_SERVICE_GNOMEAPPS (service);
+
+	if (self->priv->num_fans != -1 && self->priv->num_comments != -1) {
+		empty_action_panel (self);
+
+		string = g_strdup_printf ("Fans: %d", self->priv->num_fans);
+		gtk_box_pack_start (GTK_BOX (self->priv->action_panel), gtk_label_new (string), FALSE, TRUE, 0);
+		g_free (string);
+
+		string = g_strdup_printf ("Comments: %d", self->priv->num_comments);
+		gtk_box_pack_start (GTK_BOX (self->priv->action_panel), gtk_label_new (string), FALSE, TRUE, 0);
+		g_free (string);
+
+		string = g_strdup_printf ("Downloads: %d", self->priv->num_downloads);
+		gtk_box_pack_start (GTK_BOX (self->priv->action_panel), gtk_label_new (string), FALSE, TRUE, 0);
+		g_free (string);
+
+		gtk_widget_show_all (GTK_WIDGET (self->priv->action_panel));
+	}
+}
+
+static void set_fans (GList *list, gpointer userdata)
+{
+	GList *iter;
+	MaintainrService *service;
+	MaintainrServiceGnomeapps *self;
+
+	service = (MaintainrService*) userdata;
+	self = MAINTAINR_SERVICE_GNOMEAPPS (service);
+
+	if (list == NULL) {
+		self->priv->num_fans = 0;
+	}
+	else {
+		self->priv->num_fans = g_list_length (list);
+
+		for (iter = list; iter != NULL; iter = iter->next)
+			g_object_unref (OGD_OBJECT (iter->data));
+		g_list_free (list);
+	}
+
+	update_visible_data (service);
+}
+
+static void set_comments (GList *list, gpointer userdata)
+{
+	GList *iter;
+	MaintainrService *service;
+	MaintainrServiceGnomeapps *self;
+
+	service = (MaintainrService*) userdata;
+	self = MAINTAINR_SERVICE_GNOMEAPPS (service);
+
+	if (list == NULL) {
+		self->priv->num_comments = 0;
+	}
+	else {
+		self->priv->num_comments = g_list_length (list);
+
+		for (iter = list; iter != NULL; iter = iter->next)
+			g_object_unref (OGD_OBJECT (iter->data));
+		g_list_free (list);
+	}
+
+	update_visible_data (service);
+}
 
 static void on_ogd_contents (OGDObject *obj, MaintainrService *service)
 {
-	gchar *string;
-	GList *full_list;
-	GList *iter;
 	OGDContent *content;
 	MaintainrServiceGnomeapps *self;
 
 	self = MAINTAINR_SERVICE_GNOMEAPPS (service);
-	empty_action_panel (self);
 
 	if (obj == NULL) {
+		empty_action_panel (self);
 		gtk_box_pack_start (GTK_BOX (self->priv->action_panel), gtk_label_new ("Unable to retrieve the content on gtk-apps.org"), TRUE, TRUE, 0);
 		gtk_widget_show_all (GTK_WIDGET (self->priv->action_panel));
 		return;
@@ -101,29 +173,10 @@ static void on_ogd_contents (OGDObject *obj, MaintainrService *service)
 
 	content = OGD_CONTENT (obj);
 
-	full_list = ogd_content_get_fans (content);
-	string = g_strdup_printf ("Fans: %d", g_list_length (full_list));
-	gtk_box_pack_start (GTK_BOX (self->priv->action_panel), gtk_label_new (string), FALSE, TRUE, 0);
-	g_free (string);
-
-	for (iter = full_list; iter != NULL; iter = iter->next)
-		g_object_unref (OGD_OBJECT (iter->data));
-	g_list_free (full_list);
-
-	full_list = ogd_content_get_comments (content);
-	string = g_strdup_printf ("Comments: %d", g_list_length (full_list));
-	gtk_box_pack_start (GTK_BOX (self->priv->action_panel), gtk_label_new (string), FALSE, TRUE, 0);
-	g_free (string);
-
-	for (iter = full_list; iter != NULL; iter = iter->next)
-		g_object_unref (OGD_OBJECT (iter->data));
-	g_list_free (full_list);
-
-	string = g_strdup_printf ("Downloads: %lu", ogd_content_get_num_downloads (content));
-	gtk_box_pack_start (GTK_BOX (self->priv->action_panel), gtk_label_new (string), FALSE, TRUE, 0);
-	g_free (string);
-
-	gtk_widget_show_all (GTK_WIDGET (self->priv->action_panel));
+	self->priv->num_fans = self->priv->num_comments = -1;
+	self->priv->num_downloads = ogd_content_get_num_downloads (content);
+	ogd_content_get_fans_async (content, set_fans, service);
+	ogd_content_get_comments_async (content, set_comments, service);
 }
 
 static void fill_action_panel (MaintainrService *service)
