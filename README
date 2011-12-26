@@ -7,17 +7,16 @@ Permits to collect todos, update people about progresses via social networks
 such as identi.ca and gtk-apps.org, and share spare time among them accordly
 a not-so-randomic heuristic.
 
-Maintainr homepage is available at: http://maintainr.barberaware.org/
+Maintainr homepage is available at: http://madbob.org/index.php/Maintainr
 
 REQUIREMENTS
 -------------------------------------------------------------------------------
 Maintainr depends on:
 
-  - libgtk2 >= 2.18.9
+  - libgtk3 >= 3.1
   - libxml-2.0 >= 2.7.7
-  - twitter-glib >= 0.9.8
-  - libgrss >= 0.4
-  - libopengdesktop >= 0.4
+  - libgrss >= 0.5
+  - libopengdesktop >= 0.5
 
 INSTALLATION
 -------------------------------------------------------------------------------
@@ -30,4 +29,4 @@ COPYRIGHT AND LICENSING
 Maintainr is released under the terms of the GNU General Public License,
 version 3 or, at your option, any later version.
 
-Maintainr is Copyright (C) 2010  Roberto Guido.
+Maintainr is Copyright (C) 2010/2011 Roberto Guido.
