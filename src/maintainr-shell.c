@@ -68,7 +68,7 @@ static void set_status (MaintainrShell *shell)
 
 		since = maintainr_projectconf_get_top_since (top);
 		if (since != 0)
-			days = ceil (((double) time (NULL) - (double) since) / (double) 3600);
+			days = ceil (((double) time (NULL) - (double) since) / (double) 86400);
 		else
 			days = 0;
 
@@ -126,6 +126,19 @@ static GtkWidget* do_project_box (MaintainrShell *item)
 	return box;
 }
 
+static gboolean scroll_to_bottom (gpointer userdata)
+{
+	GtkAdjustment *adj;
+	GtkWidget *scrolled;
+
+	scrolled = (GtkWidget*) userdata;
+
+	adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (scrolled));
+	gtk_adjustment_set_value (adj, gtk_adjustment_get_upper (adj));
+
+	return FALSE;
+}
+
 static void add_new_project (GtkButton *button, MaintainrShell *item)
 {
 	GtkWidget *box;
@@ -134,21 +147,20 @@ static void add_new_project (GtkButton *button, MaintainrShell *item)
 	remove_empty_screen (item);
 
 	box = do_project_box (item);
-	maintainr_projectbox_set_conf (MAINTAINR_PROJECTBOX (box), maintainr_projectconf_new ());
-	gtk_widget_show_all (box);
+	gtk_box_pack_end (GTK_BOX (item->priv->projects_box), box, TRUE, TRUE, 10);
 
-	gtk_box_pack_start (GTK_BOX (item->priv->projects_box), box, TRUE, TRUE, 10);
-	gtk_box_reorder_child (GTK_BOX (item->priv->projects_box), box, 0);
+	maintainr_projectbox_set_conf (MAINTAINR_PROJECTBOX (box), maintainr_projectconf_new ());
+	maintainr_projectbox_set_editing_mode (MAINTAINR_PROJECTBOX (box));
+
+	set_status (item);
 
 	/*
 		The list of projects is in a viewport, which is in the required scrolled window
 	*/
 	scrolled = gtk_widget_get_parent (gtk_widget_get_parent (item->priv->projects_box));
-	gtk_adjustment_set_value (gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (scrolled)), 0);
+	gtk_widget_show_all (scrolled);
 
-	maintainr_projectbox_set_editing_mode (MAINTAINR_PROJECTBOX (box));
-
-	set_status (item);
+	g_idle_add (scroll_to_bottom, scrolled);
 }
 
 static void skip_next_project (GtkButton *button, MaintainrShell *item)
