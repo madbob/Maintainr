@@ -1,4 +1,4 @@
-/*  Copyright (C) 2010 Roberto Guido <madbob@users.barberaware.org>
+/*  Copyright (C) 2010/2011 Roberto Guido <bob4job@gmail.com>
  *
  *  This file is part of Maintainr
  *
