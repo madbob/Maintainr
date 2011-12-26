@@ -17,13 +17,16 @@
  */
 
 #include "maintainr-service-gnomeapps.h"
+#include <ogd.h>
 
 #define MAINTAINR_SERVICE_GNOMEAPPS_GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE ((obj), MAINTAINR_SERVICE_GNOMEAPPS_TYPE, MaintainrServiceGnomeappsPrivate))
 
 struct _MaintainrServiceGnomeappsPrivate {
+	OGDProvider *provider;
 	gchar *contentid;
 	gchar *username;
 	gchar *password;
+
 	GtkWidget *active;
 	GtkWidget *id_entry;
 	GtkWidget *username_entry;
@@ -66,6 +69,78 @@ static gchar* service_write_config (MaintainrService *service)
 				self->priv->contentid, self->priv->username, self->priv->password);
 }
 
+static void empty_action_panel (MaintainrServiceGnomeapps *self)
+{
+	GList *children;
+	GList *iter;
+
+	children = gtk_container_get_children (GTK_CONTAINER (self->priv->action_panel));
+
+	for (iter = children; iter != NULL; iter = iter->next)
+		gtk_container_remove (GTK_CONTAINER (self->priv->action_panel), GTK_WIDGET (iter->data));
+	g_list_free (children);
+}
+
+
+static void on_ogd_contents (OGDObject *obj, MaintainrService *service)
+{
+	gchar *string;
+	GList *full_list;
+	GList *iter;
+	OGDContent *content;
+	MaintainrServiceGnomeapps *self;
+
+	self = MAINTAINR_SERVICE_GNOMEAPPS (service);
+	empty_action_panel (self);
+
+	if (obj == NULL) {
+		gtk_box_pack_start (GTK_BOX (self->priv->action_panel), gtk_label_new ("Unable to retrieve the content on gtk-apps.org"), TRUE, TRUE, 0);
+		gtk_widget_show_all (GTK_WIDGET (self->priv->action_panel));
+		return;
+	}
+
+	content = OGD_CONTENT (obj);
+
+	full_list = ogd_content_get_fans (content);
+	string = g_strdup_printf ("Fans: %d", g_list_length (full_list));
+	gtk_box_pack_start (GTK_BOX (self->priv->action_panel), gtk_label_new (string), FALSE, TRUE, 0);
+	g_free (string);
+
+	for (iter = full_list; iter != NULL; iter = iter->next)
+		g_object_unref (OGD_OBJECT (iter->data));
+	g_list_free (full_list);
+
+	full_list = ogd_content_get_comments (content);
+	string = g_strdup_printf ("Comments: %d", g_list_length (full_list));
+	gtk_box_pack_start (GTK_BOX (self->priv->action_panel), gtk_label_new (string), FALSE, TRUE, 0);
+	g_free (string);
+
+	for (iter = full_list; iter != NULL; iter = iter->next)
+		g_object_unref (OGD_OBJECT (iter->data));
+	g_list_free (full_list);
+
+	string = g_strdup_printf ("Downloads: %lu", ogd_content_get_num_downloads (content));
+	gtk_box_pack_start (GTK_BOX (self->priv->action_panel), gtk_label_new (string), FALSE, TRUE, 0);
+	g_free (string);
+
+	gtk_widget_show_all (GTK_WIDGET (self->priv->action_panel));
+}
+
+static void fill_action_panel (MaintainrService *service)
+{
+	MaintainrServiceGnomeapps *self;
+
+	if (maintainr_service_get_active (service) == TRUE) {
+		self = MAINTAINR_SERVICE_GNOMEAPPS (service);
+
+		empty_action_panel (self);
+		gtk_box_pack_start (GTK_BOX (self->priv->action_panel), gtk_label_new ("Waiting for contents..."), TRUE, TRUE, 0);
+
+		ogd_provider_auth_user_and_pwd (self->priv->provider, self->priv->username, self->priv->password);
+		ogd_content_new_by_id_async (self->priv->provider, self->priv->contentid, (OGDAsyncCallback) on_ogd_contents, service);
+	}
+}
+
 static void service_config_saved (MaintainrService *service)
 {
 	MaintainrServiceGnomeapps *self;
@@ -83,6 +158,8 @@ static void service_config_saved (MaintainrService *service)
 	if (self->priv->password != NULL)
 		g_free (self->priv->password);
 	self->priv->password = g_strdup (gtk_entry_get_text (GTK_ENTRY (self->priv->password_entry)));
+
+	fill_action_panel (service);
 }
 
 static void toggle_active_service (GtkToggleButton *button, MaintainrService *service)
@@ -139,12 +216,7 @@ static GtkWidget* service_action_panel (MaintainrService *service)
 
 	if (self->priv->action_panel == NULL) {
 		self->priv->action_panel = gtk_vbox_new (FALSE, 0);
-
-		/**
-			TODO
-		*/
-
-		gtk_box_pack_start (GTK_BOX (self->priv->action_panel), gtk_label_new ("TODO"), TRUE, TRUE, 0);
+		fill_action_panel (service);
 	}
 
 	return self->priv->action_panel;
@@ -152,10 +224,6 @@ static GtkWidget* service_action_panel (MaintainrService *service)
 
 static GList* service_action_buttons (MaintainrService *service)
 {
-	/**
-		TODO
-	*/
-
 	return NULL;
 }
 
@@ -196,6 +264,8 @@ static void maintainr_service_gnomeapps_class_init (MaintainrServiceGnomeappsCla
 static void maintainr_service_gnomeapps_init (MaintainrServiceGnomeapps *item)
 {
 	item->priv = MAINTAINR_SERVICE_GNOMEAPPS_GET_PRIVATE (item);
+
+	item->priv->provider = ogd_provider_new ("api.gtk-apps.org");
 }
 
 MaintainrServiceGnomeapps* maintainr_service_gnomeapps_new ()

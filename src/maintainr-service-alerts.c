@@ -114,7 +114,7 @@ static void open_link_in_browser (GtkTreeView *tree_view, GtkTreePath *path, Gtk
 
 static const gchar* service_get_name (MaintainrService *service)
 {
-	return "alerts";
+	return "Google Alerts";
 }
 
 static void service_read_config (MaintainrService *service, xmlNode *node)
@@ -149,6 +149,8 @@ static void service_config_saved (MaintainrService *service)
 	if (self->priv->url != NULL)
 		g_free (self->priv->url);
 	self->priv->url = g_strdup (gtk_entry_get_text (GTK_ENTRY (self->priv->url_entry)));
+
+	maintainr_service_set_active (service, strlen (gtk_entry_get_text (GTK_ENTRY (self->priv->url_entry))) != 0);
 
 	run_scheduler (self);
 }
