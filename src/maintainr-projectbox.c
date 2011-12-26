@@ -391,15 +391,9 @@ static GtkWidget* do_config (MaintainrProjectbox *item)
 	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 10);
 
 	button = gtk_button_new ();
-	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_SAVE, GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_APPLY, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Save settings and back to the main screen");
 	g_signal_connect (button, "clicked", G_CALLBACK (save_conf), item);
-	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 10);
-
-	button = gtk_button_new ();
-	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_CANCEL, GTK_ICON_SIZE_BUTTON));
-	gtk_widget_set_tooltip_text (button, "Back to the main screen without saving");
-	g_signal_connect_swapped (button, "clicked", G_CALLBACK (show_main), item);
 	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 10);
 
 	return vbox;
@@ -458,7 +452,7 @@ static GtkWidget* do_service_action_panel (MaintainrProjectbox *box, MaintainrSe
 	}
 
 	button = gtk_button_new ();
-	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_CANCEL, GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_OK, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Back to the main screen");
 	g_signal_connect_swapped (button, "clicked", G_CALLBACK (show_main), box);
 	gtk_box_pack_start (GTK_BOX (buttons), button, TRUE, TRUE, 0);
