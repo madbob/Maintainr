@@ -17,6 +17,7 @@
  */
 
 #include "common.h"
+#include "maintainr-icons.h"
 #include "maintainr-config.h"
 #include "maintainr-shell.h"
 
@@ -52,6 +53,7 @@ int main (int argc, char **argv)
 {
 	GtkWidget *window;
 	GtkWidget *shell;
+	GdkPixbuf *icon;
 	MaintainrConfig *config;
 
 	gtk_init (&argc, &argv);
@@ -66,6 +68,9 @@ int main (int argc, char **argv)
 
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	g_signal_connect (window, "delete-event", G_CALLBACK (save_position_and_close), config);
+
+	icon = gdk_pixbuf_new_from_xpm_data (maintainr_icon);
+	gtk_window_set_icon (GTK_WINDOW (window), icon);
 
 	restore_window_properties (window, config);
 
