@@ -328,12 +328,13 @@ static GtkWidget* do_todos (MaintainrProjectbox *item)
 
 	renderer = gtk_cell_renderer_toggle_new ();
 	gtk_cell_renderer_toggle_set_activatable (GTK_CELL_RENDERER_TOGGLE (renderer), TRUE);
+	g_object_set (G_OBJECT (renderer), "yalign", 0, NULL);
 	col = gtk_tree_view_column_new_with_attributes ("Check", renderer, "active", 0, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (item->priv->todos), col);
 	g_signal_connect (renderer, "toggled", G_CALLBACK (todo_check_changed), item);
 
 	renderer = gtk_cell_renderer_text_new ();
-	g_object_set (G_OBJECT (renderer), "editable", TRUE, NULL);
+	g_object_set (G_OBJECT (renderer), "editable", TRUE, "wrap-width", 200, "wrap-mode", PANGO_WRAP_WORD, "yalign", 0, NULL);
 	col = gtk_tree_view_column_new_with_attributes ("String", renderer, "text", 1, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (item->priv->todos), col);
 	g_signal_connect (renderer, "edited", G_CALLBACK (todo_string_changed), item);
