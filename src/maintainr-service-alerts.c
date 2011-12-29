@@ -137,7 +137,7 @@ static gchar* service_write_config (MaintainrService *service)
 	MaintainrServiceAlerts *self;
 
 	self = MAINTAINR_SERVICE_ALERTS (service);
-	return g_strdup_printf ("<url>%s</url>", self->priv->url);
+	return g_strdup_printf ("<url>%s</url>", self->priv->url ? self->priv->url : "");
 }
 
 static void service_config_saved (MaintainrService *service)

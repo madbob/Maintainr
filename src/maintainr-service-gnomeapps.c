@@ -70,7 +70,9 @@ static gchar* service_write_config (MaintainrService *service)
 
 	self = MAINTAINR_SERVICE_GNOMEAPPS (service);
 	return g_strdup_printf ("<contentid>%s</contentid><username>%s</username><password>%s</password>",
-				self->priv->contentid, self->priv->username, self->priv->password);
+				self->priv->contentid ? self->priv->contentid : "",
+				self->priv->username ? self->priv->username : "",
+				self->priv->password ? self->priv->password : "");
 }
 
 static void empty_action_panel (MaintainrServiceGnomeapps *self)

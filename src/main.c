@@ -20,7 +20,36 @@
 #include "maintainr-config.h"
 #include "maintainr-shell.h"
 
-int main (int argc, char **argv) {
+void save_position_and_close (GtkWidget *widget, GdkEvent *event, MaintainrConfig *config)
+{
+	int x;
+	int y;
+	int width;
+	int height;
+
+	gtk_window_get_position (GTK_WINDOW (widget), &x, &y);
+	gtk_window_get_size (GTK_WINDOW (widget), &width, &height);
+
+	maintainr_config_set_window_properties (config, width, height, x, y);
+	maintainr_config_save (config);
+
+	gtk_main_quit ();
+}
+
+void restore_window_properties (GtkWidget *window, MaintainrConfig *config)
+{
+	int x;
+	int y;
+	int width;
+	int height;
+
+	maintainr_config_get_window_properties (config, &width, &height, &x, &y);
+	gtk_window_set_default_size (GTK_WINDOW (window), width, height);
+	gtk_window_move (GTK_WINDOW (window), x, y);
+}
+
+int main (int argc, char **argv)
+{
 	GtkWidget *window;
 	GtkWidget *shell;
 	MaintainrConfig *config;
@@ -36,8 +65,9 @@ int main (int argc, char **argv) {
 		exit (1);
 
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size (GTK_WINDOW (window), 300, 500);
-	g_signal_connect (window, "delete-event", G_CALLBACK (gtk_main_quit), NULL);
+	g_signal_connect (window, "delete-event", G_CALLBACK (save_position_and_close), config);
+
+	restore_window_properties (window, config);
 
 	shell = maintainr_shell_new ();
 	gtk_container_add (GTK_CONTAINER (window), shell);

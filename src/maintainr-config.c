@@ -23,6 +23,11 @@
 #define MAINTAINR_CONFIG_GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE ((obj), MAINTAINR_CONFIG_TYPE, MaintainrConfigPrivate))
 
 struct _MaintainrConfigPrivate {
+	int window_x;
+	int window_y;
+	int window_width;
+	int window_height;
+
 	GList *projects;
 };
 
@@ -55,6 +60,11 @@ static void maintainr_config_class_init (MaintainrConfigClass *klass)
 static void maintainr_config_init (MaintainrConfig *item)
 {
 	item->priv = MAINTAINR_CONFIG_GET_PRIVATE (item);
+
+	item->priv->window_x = 0;
+	item->priv->window_y = 0;
+	item->priv->window_width = 300;
+	item->priv->window_height = 500;
 }
 
 static gchar* conf_file_path ()
@@ -154,6 +164,31 @@ void maintainr_config_handle_backup ()
 		g_thread_create (manage_backups, path, FALSE, NULL);
 }
 
+void read_application_configuration (MaintainrConfig *conf, xmlNode *node)
+{
+	gchar *str;
+	xmlNode *iter;
+
+	for (iter = node; iter; iter = iter->next) {
+		if (strcmp ((gchar*) iter->name, "windowx") == 0) {
+			str = (gchar*) xmlNodeGetContent (iter);
+			conf->priv->window_x = strtoll (str, NULL, 10);
+		}
+		else if (strcmp ((gchar*) iter->name, "windowy") == 0) {
+			str = (gchar*) xmlNodeGetContent (iter);
+			conf->priv->window_y = strtoll (str, NULL, 10);
+		}
+		else if (strcmp ((gchar*) iter->name, "windowwidth") == 0) {
+			str = (gchar*) xmlNodeGetContent (iter);
+			conf->priv->window_width = strtoll (str, NULL, 10);
+		}
+		else if (strcmp ((gchar*) iter->name, "windowheight") == 0) {
+			str = (gchar*) xmlNodeGetContent (iter);
+			conf->priv->window_height = strtoll (str, NULL, 10);
+		}
+	}
+}
+
 MaintainrConfig* maintainr_config_read_configuration ()
 {
 	gchar *path;
@@ -178,6 +213,9 @@ MaintainrConfig* maintainr_config_read_configuration ()
 					proj = maintainr_projectconf_new ();
 					maintainr_projectconf_read (proj, node->children);
 					ret->priv->projects = g_list_prepend (ret->priv->projects, proj);
+				}
+				else if (strcmp ((gchar*) node->name, "application") == 0) {
+					read_application_configuration (ret, node->children);
 				}
 			}
 		}
@@ -208,6 +246,13 @@ void maintainr_config_save (MaintainrConfig *conf)
 	if (file != NULL) {
 		fprintf (file, "<maintainr>\n\n");
 
+		fprintf (file, "<application>\n");
+		fprintf (file, "<windowx>%d</windowx>\n", conf->priv->window_x);
+		fprintf (file, "<windowy>%d</windowy>\n", conf->priv->window_y);
+		fprintf (file, "<windowwidth>%d</windowwidth>\n", conf->priv->window_width);
+		fprintf (file, "<windowheight>%d</windowheight>\n", conf->priv->window_height);
+		fprintf (file, "</application>\n");
+
 		for (iter = conf->priv->projects; iter; iter = iter->next) {
 			data = maintainr_projectconf_write (iter->data);
 			fprintf (file, "%s\n", data);
@@ -222,6 +267,22 @@ void maintainr_config_save (MaintainrConfig *conf)
 	}
 
 	g_free (path);
+}
+
+void maintainr_config_get_window_properties (MaintainrConfig *conf, int *width, int *height, int *x, int *y)
+{
+	*x = conf->priv->window_x;
+	*y = conf->priv->window_y;
+	*width = conf->priv->window_width;
+	*height = conf->priv->window_height;
+}
+
+void maintainr_config_set_window_properties (MaintainrConfig *conf, int width, int height, int x, int y)
+{
+	conf->priv->window_x = x;
+	conf->priv->window_y = y;
+	conf->priv->window_width = width;
+	conf->priv->window_height = height;
 }
 
 GList* maintainr_config_get_projects (MaintainrConfig *conf)

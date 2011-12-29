@@ -56,6 +56,8 @@ void			maintainr_config_handle_backup ();
 MaintainrConfig*	maintainr_config_read_configuration ();
 void			maintainr_config_save (MaintainrConfig *conf);
 
+void			maintainr_config_get_window_properties (MaintainrConfig *conf, int *width, int *height, int *x, int *y);
+void			maintainr_config_set_window_properties (MaintainrConfig *conf, int width, int height, int x, int y);
 GList*			maintainr_config_get_projects (MaintainrConfig *conf);
 int			maintainr_config_get_projects_num (MaintainrConfig *conf);
 void			maintainr_config_add_project (MaintainrConfig *conf, MaintainrProjectconf *project);
