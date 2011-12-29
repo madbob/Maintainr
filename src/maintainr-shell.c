@@ -51,7 +51,6 @@ static void set_status (MaintainrShell *shell)
 {
 	gchar *status;
 	int days;
-	time_t since;
 	GList *projects;
 	GtkStatusbar *bar;
 	MaintainrProjectconf *top;
@@ -65,12 +64,7 @@ static void set_status (MaintainrShell *shell)
 	}
 	else {
 		top = projects->data;
-
-		since = maintainr_projectconf_get_top_since (top);
-		if (since != 0)
-			days = ceil (((double) time (NULL) - (double) since) / (double) 86400);
-		else
-			days = 0;
+		days = maintainr_projectconf_get_top_since_days (top);
 
 		status = g_strdup_printf ("There are %d projects - %s on top since %d days",
 					  g_list_length (projects), maintainr_projectconf_get_name (top), days);

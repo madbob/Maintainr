@@ -73,6 +73,7 @@ void			maintainr_projectconf_set_todos (MaintainrProjectconf *conf, GList *todos
 void			maintainr_projectconf_sort_todos (MaintainrProjectconf *conf, GList *todos);
 GList*			maintainr_projectconf_get_services (MaintainrProjectconf *conf);
 time_t			maintainr_projectconf_get_top_since (MaintainrProjectconf *conf);
+int			maintainr_projectconf_get_top_since_days (MaintainrProjectconf *conf);
 void			maintainr_projectconf_set_top_now (MaintainrProjectconf *conf);
 
 #endif

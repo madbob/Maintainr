@@ -32,6 +32,13 @@ struct _MaintainrProjectconfPrivate {
 	GList *services;
 };
 
+enum {
+	ON_TOP,
+	LAST_SIGNAL
+};
+
+static guint signals [LAST_SIGNAL];
+
 G_DEFINE_TYPE (MaintainrProjectconf, maintainr_projectconfig, G_TYPE_OBJECT);
 
 static void maintainr_projectconfig_finalize (GObject *obj)
@@ -63,6 +70,12 @@ static void maintainr_projectconfig_class_init (MaintainrProjectconfClass *klass
 
 	gobject_class = G_OBJECT_CLASS (klass);
 	gobject_class->finalize = maintainr_projectconfig_finalize;
+
+	signals [ON_TOP] = g_signal_newv ("on-top",
+				G_TYPE_FROM_CLASS (gobject_class), G_SIGNAL_RUN_LAST,
+				NULL, NULL, NULL,
+				g_cclosure_marshal_VOID__VOID,
+				G_TYPE_NONE, 0, NULL);
 
 	g_type_class_add_private (klass, sizeof (MaintainrProjectconfPrivate));
 }
@@ -267,8 +280,24 @@ time_t maintainr_projectconf_get_top_since (MaintainrProjectconf *conf)
 	return conf->priv->top_since;
 }
 
+int maintainr_projectconf_get_top_since_days (MaintainrProjectconf *conf)
+{
+	int days;
+	time_t since;
+
+	since = maintainr_projectconf_get_top_since (conf);
+	if (since != 0)
+		days = ceil (((double) time (NULL) - (double) since) / (double) 86400);
+	else
+		days = 0;
+
+	return days;
+}
+
 void maintainr_projectconf_set_top_now (MaintainrProjectconf *conf)
 {
-	if (conf != NULL)
+	if (conf != NULL) {
 		conf->priv->top_since = time (NULL);
+		g_signal_emit (conf, signals [ON_TOP], 0, NULL);
+	}
 }

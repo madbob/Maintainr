@@ -461,6 +461,19 @@ static GtkWidget* do_service_action_panel (MaintainrProjectbox *box, MaintainrSe
 	return frame;
 }
 
+static void todo_aging_color (MaintainrProjectbox *box)
+{
+	int days;
+	GdkColor color;
+
+	days = maintainr_projectconf_get_top_since_days (box->priv->conf);
+	color.red = 65535;
+	color.green = 65535 - (days * 100);
+	color.blue = 65535 - (days * 100);
+
+	gtk_widget_modify_bg (box->priv->todos, GTK_STATE_NORMAL, &color);
+}
+
 void maintainr_projectbox_set_conf (MaintainrProjectbox *box, MaintainrProjectconf *conf)
 {
 	int pos;
@@ -515,6 +528,9 @@ void maintainr_projectbox_set_conf (MaintainrProjectbox *box, MaintainrProjectco
 
 	if (g_signal_handler_find (box->priv->todos, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, G_CALLBACK (check_if_sorted), box) == 0)
 		g_signal_connect (box->priv->todos, "drag-end", G_CALLBACK (check_if_sorted), box);
+
+	todo_aging_color (box);
+	g_signal_connect_swapped (conf, "on-top", G_CALLBACK (todo_aging_color), box);
 
 	gtk_widget_show_all (GTK_WIDGET (box));
 }
