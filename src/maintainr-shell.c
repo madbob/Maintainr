@@ -183,6 +183,35 @@ static void skip_next_project (GtkButton *button, MaintainrShell *item)
 	set_status (item);
 }
 
+static void do_filter (GtkWidget *searchbar, GdkEvent *event, MaintainrShell *shell)
+{
+	const gchar *text;
+	GList *children;
+	GList *iter;
+	MaintainrProjectbox *box;
+
+	text = gtk_entry_get_text (GTK_ENTRY (searchbar));
+	children = gtk_container_get_children (GTK_CONTAINER (shell->priv->projects_box));
+
+	for (iter = children; iter; iter = g_list_next (iter)) {
+		if (IS_MAINTAINR_PROJECTBOX (iter->data)) {
+			box = MAINTAINR_PROJECTBOX (iter->data);
+
+			if (strcmp (text, "\0") == 0 && gtk_widget_get_visible (iter->data) == FALSE) {
+				gtk_widget_show (iter->data);
+			}
+			else {
+				if (strcasestr (maintainr_projectbox_get_name (box), text) == NULL &&
+						gtk_widget_get_visible (iter->data) == TRUE) {
+					gtk_widget_hide (iter->data);
+				}
+			}
+		}
+	}
+
+	g_list_free (children);
+}
+
 static void maintainr_shell_finalize (GObject *object)
 {
 	MaintainrShell *shell;
@@ -203,31 +232,43 @@ static void maintainr_shell_class_init (MaintainrShellClass *klass)
 
 static void maintainr_shell_init (MaintainrShell *item)
 {
+	GtkWidget *head;
 	GtkWidget *buttons;
-	GtkWidget *scroll;
 	GtkWidget *button;
+	GtkWidget *search;
+	GtkWidget *scroll;
 
 	item->priv = MAINTAINR_SHELL_GET_PRIVATE (item);
 	gtk_box_set_spacing (GTK_BOX (item), 5);
-
 	gtk_box_set_homogeneous (GTK_BOX (item), FALSE);
 	gtk_container_set_border_width (GTK_CONTAINER (item), 0);
 
+	head = gtk_vbox_new (TRUE, 0);
+	gtk_box_set_spacing (GTK_BOX (item), 5);
+	gtk_container_set_border_width (GTK_CONTAINER (head), 10);
+	gtk_box_pack_start (GTK_BOX (item), head, FALSE, FALSE, 10);
+
 	buttons = gtk_hbox_new (TRUE, 0);
-	gtk_container_set_border_width (GTK_CONTAINER (buttons), 10);
-	gtk_box_pack_start (GTK_BOX (item), buttons, FALSE, FALSE, 10);
+	gtk_container_set_border_width (GTK_CONTAINER (buttons), 0);
+	gtk_box_pack_start (GTK_BOX (head), buttons, FALSE, FALSE, 0);
 
 	button = gtk_button_new ();
 	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Create a new project");
-	gtk_box_pack_start (GTK_BOX (buttons), button, TRUE, TRUE, 10);
+	gtk_box_pack_start (GTK_BOX (buttons), button, TRUE, TRUE, 0);
 	g_signal_connect (button, "clicked", G_CALLBACK (add_new_project), item);
 
 	button = gtk_button_new ();
 	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_INDEX, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Push on top the next project by priority");
-	gtk_box_pack_start (GTK_BOX (buttons), button, TRUE, TRUE, 10);
+	gtk_box_pack_start (GTK_BOX (buttons), button, TRUE, TRUE, 0);
 	g_signal_connect (button, "clicked", G_CALLBACK (skip_next_project), item);
+
+	search = gtk_entry_new ();
+	g_signal_connect (search, "key-release-event", G_CALLBACK (do_filter), item);
+	gtk_box_pack_start (GTK_BOX (head), search, FALSE, FALSE, 0);
+
+	gtk_box_pack_start (GTK_BOX (item), gtk_hseparator_new (), FALSE, FALSE, 0);
 
 	scroll = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

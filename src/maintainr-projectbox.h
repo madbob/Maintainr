@@ -56,5 +56,6 @@ GtkWidget*		maintainr_projectbox_new ();
 void			maintainr_projectbox_set_editing_mode (MaintainrProjectbox *box);
 void			maintainr_projectbox_set_conf (MaintainrProjectbox *box, MaintainrProjectconf *conf);
 MaintainrProjectconf*	maintainr_projectbox_get_conf (MaintainrProjectbox *box);
+const gchar*		maintainr_projectbox_get_name (MaintainrProjectbox *box);
 
 #endif

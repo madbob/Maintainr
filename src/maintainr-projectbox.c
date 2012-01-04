@@ -569,3 +569,8 @@ MaintainrProjectconf* maintainr_projectbox_get_conf (MaintainrProjectbox *box)
 	maintainr_projectconf_set_todos (box->priv->conf, todos);
 	return box->priv->conf;
 }
+
+const gchar* maintainr_projectbox_get_name (MaintainrProjectbox *box)
+{
+	return maintainr_projectconf_get_name (box->priv->conf);
+}
