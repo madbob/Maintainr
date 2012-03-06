@@ -36,7 +36,7 @@ static void set_empty_screen (MaintainrShell *item)
 	gtk_label_set_markup (GTK_LABEL (item->priv->empty_notification), "There are no projects registered.\nClick the + button to add a new one.");
 	gtk_label_set_use_markup (GTK_LABEL (item->priv->empty_notification), TRUE);
 	gtk_label_set_justify (GTK_LABEL (item->priv->empty_notification), GTK_JUSTIFY_CENTER);
-	gtk_box_pack_start (GTK_BOX (item->priv->projects_box), item->priv->empty_notification, TRUE, TRUE, 10);
+	gtk_box_pack_start (GTK_BOX (item->priv->projects_box), item->priv->empty_notification, TRUE, TRUE, 0);
 	gtk_widget_show (item->priv->empty_notification);
 }
 
@@ -239,14 +239,14 @@ static void maintainr_shell_init (MaintainrShell *item)
 	GtkWidget *scroll;
 
 	item->priv = MAINTAINR_SHELL_GET_PRIVATE (item);
-	gtk_box_set_spacing (GTK_BOX (item), 5);
+	gtk_box_set_spacing (GTK_BOX (item), 0);
 	gtk_box_set_homogeneous (GTK_BOX (item), FALSE);
 	gtk_container_set_border_width (GTK_CONTAINER (item), 0);
 
 	head = gtk_vbox_new (TRUE, 0);
-	gtk_box_set_spacing (GTK_BOX (item), 5);
-	gtk_container_set_border_width (GTK_CONTAINER (head), 10);
-	gtk_box_pack_start (GTK_BOX (item), head, FALSE, FALSE, 10);
+	gtk_box_set_spacing (GTK_BOX (item), 0);
+	gtk_container_set_border_width (GTK_CONTAINER (head), 0);
+	gtk_box_pack_start (GTK_BOX (item), head, FALSE, FALSE, 0);
 
 	buttons = gtk_hbox_new (TRUE, 0);
 	gtk_container_set_border_width (GTK_CONTAINER (buttons), 0);
@@ -304,7 +304,7 @@ void maintainr_shell_set_config (MaintainrShell *shell, MaintainrConfig *conf)
 		for (iter = projects; iter; iter = iter->next) {
 			box = do_project_box (shell);
 			maintainr_projectbox_set_conf (MAINTAINR_PROJECTBOX (box), iter->data);
-			gtk_box_pack_start (GTK_BOX (shell->priv->projects_box), box, TRUE, TRUE, 10);
+			gtk_box_pack_start (GTK_BOX (shell->priv->projects_box), box, TRUE, TRUE, 0);
 		}
 	}
 

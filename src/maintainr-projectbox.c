@@ -364,7 +364,7 @@ static GtkWidget* do_config (MaintainrProjectbox *item)
 	vbox = gtk_vbox_new (FALSE, 10);
 
 	table = gtk_table_new (3, 2, FALSE);
-	gtk_container_set_border_width (GTK_CONTAINER (table), 10);
+	gtk_container_set_border_width (GTK_CONTAINER (table), 0);
 	gtk_box_pack_start (GTK_BOX (vbox), table, FALSE, FALSE, 0);
 
 	item->priv->project_name = gtk_entry_new ();
@@ -383,19 +383,19 @@ static GtkWidget* do_config (MaintainrProjectbox *item)
 	gtk_box_pack_start (GTK_BOX (vbox), item->priv->services_confs, TRUE, TRUE, 0);
 
 	hbox = gtk_hbox_new (TRUE, 10);
-	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 10);
+	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
 	button = gtk_button_new ();
 	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_DELETE, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Remove this project from the list");
 	g_signal_connect (button, "clicked", G_CALLBACK (delete_project), item);
-	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 10);
+	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 0);
 
 	button = gtk_button_new ();
 	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_APPLY, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Save settings and back to the main screen");
 	g_signal_connect (button, "clicked", G_CALLBACK (save_conf), item);
-	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 10);
+	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 0);
 
 	return vbox;
 }
@@ -406,7 +406,7 @@ static void maintainr_projectbox_init (MaintainrProjectbox *item)
 
 	item->priv = MAINTAINR_PROJECTBOX_GET_PRIVATE (item);
 
-	gtk_container_set_border_width (GTK_CONTAINER (item), 20);
+	gtk_container_set_border_width (GTK_CONTAINER (item), 0);
 	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (item), FALSE);
 
 	mainbox = gtk_vbox_new (FALSE, 0);
