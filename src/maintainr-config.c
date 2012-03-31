@@ -202,7 +202,7 @@ MaintainrConfig* maintainr_config_read_configuration ()
 	path = conf_file_path ();
 
 	if (access (path, F_OK) == 0) {
-		doc = xmlReadFile (path, NULL, XML_PARSE_NOBLANKS);
+		doc = xmlReadFile (path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOENT);
 		g_free (path);
 
 		root = xmlDocGetRootElement (doc);

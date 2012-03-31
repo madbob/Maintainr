@@ -178,6 +178,15 @@ void maintainr_projectconf_read (MaintainrProjectconf *conf, xmlNode *node)
 	}
 }
 
+static void append_escaped (GString *ret, gchar *format, gchar *string)
+{
+	gchar *escaped;
+
+	escaped = g_markup_escape_text (string, -1);
+	g_string_append_printf (ret, format, escaped);
+	g_free (escaped);
+}
+
 gchar* maintainr_projectconf_write (MaintainrProjectconf *conf)
 {
 	gchar *str;
@@ -187,7 +196,8 @@ gchar* maintainr_projectconf_write (MaintainrProjectconf *conf)
 
 	ret = g_string_new ("<project>\n");
 
-	g_string_append_printf (ret, "\t<project-name>%s</project-name>\n", conf->priv->name);
+	append_escaped (ret, "\t<project-name>%s</project-name>\n", conf->priv->name);
+	append_escaped (ret, "\t<project-name>%s</project-name>\n", conf->priv->name);
 	g_string_append_printf (ret, "\t<priority>%d</priority>\n", conf->priv->priority);
 	g_string_append_printf (ret, "\t<rank>%d</rank>\n", conf->priv->rank);
 	g_string_append_printf (ret, "\t<on-top-since>%ld</on-top-since>\n", conf->priv->top_since);
@@ -205,11 +215,16 @@ gchar* maintainr_projectconf_write (MaintainrProjectconf *conf)
 
 	g_string_append_printf (ret, "\t<todos>\n");
 
-	for (iter = conf->priv->todos; iter; iter = iter->next)
+	for (iter = conf->priv->todos; iter; iter = iter->next) {
+		str = maintainr_todo_get_string (iter->data);
+		str = g_markup_escape_text (str, -1);
+
 		g_string_append_printf (ret,
 					"\t\t<todo><done>%s</done><content>%s</content></todo>\n",
-					maintainr_todo_get_done (iter->data) ? "true" : "false",
-					maintainr_todo_get_string (iter->data));
+					maintainr_todo_get_done (iter->data) ? "true" : "false", str);
+
+		g_free (str);
+	}
 
 	g_string_append_printf (ret, "\t</todos>\n</project>\n");
 	return g_string_free (ret, FALSE);

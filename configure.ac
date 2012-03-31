@@ -52,7 +52,7 @@ dnl maintainr checks
 PKG_CHECK_MODULES(MAINTAINR,
                   gtk+-3.0 >= gtk_req_version dnl
                   libxml-2.0 >= xml_req_version dnl
-                  libgrss-0 >= grss_req_version dnl
+                  libgrss-0.5 >= grss_req_version dnl
                   libopengdesktop-0 >= opengdesktop_req_version)
 AC_SUBST(MAINTAINR_CFLAGS)
 AC_SUBST(MAINTAINR_LIBS)
