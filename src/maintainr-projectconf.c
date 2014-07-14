@@ -18,8 +18,6 @@
 
 #include "maintainr-projectconf.h"
 #include "maintainr-todo.h"
-#include "maintainr-service-gnomeapps.h"
-#include "maintainr-service-alerts.h"
 
 #define MAINTAINR_PROJECTCONF_GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE ((obj), MAINTAINR_PROJECTCONF_TYPE, MaintainrProjectconfPrivate))
 
@@ -84,9 +82,6 @@ static void maintainr_projectconfig_init (MaintainrProjectconf *item)
 {
 	item->priv = MAINTAINR_PROJECTCONF_GET_PRIVATE (item);
 	item->priv->priority = PROJECT_PRIORITY_MEDIUM;
-
-	item->priv->services = g_list_prepend (item->priv->services, maintainr_service_alerts_new ());
-	item->priv->services = g_list_prepend (item->priv->services, maintainr_service_gnomeapps_new ());
 }
 
 MaintainrProjectconf* maintainr_projectconf_new ()

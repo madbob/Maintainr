@@ -17,8 +17,6 @@ m4_define([lt_age],
 
 m4_define([gtk_req_version], [3.1.0])
 m4_define([xml_req_version], [2.7.4])
-m4_define([grss_req_version], [0.5.0])
-m4_define([opengdesktop_req_version], [0.5.0])
 
 AC_PREREQ([2.59])
 AC_INIT([maintainr], [maintainr_version], [], [maintainr])
@@ -51,9 +49,7 @@ AC_SUBST(MAINTAINR_VERSION)
 dnl maintainr checks
 PKG_CHECK_MODULES(MAINTAINR,
                   gtk+-3.0 >= gtk_req_version dnl
-                  libxml-2.0 >= xml_req_version dnl
-                  libgrss-0.5 >= grss_req_version dnl
-                  libopengdesktop-0 >= opengdesktop_req_version)
+                  libxml-2.0 >= xml_req_version)
 AC_SUBST(MAINTAINR_CFLAGS)
 AC_SUBST(MAINTAINR_LIBS)
 

@@ -10,6 +10,7 @@ INCLUDES = \
 common_cflags = \
 	-I$(top_srcdir) \
 	$(MAINTAINR_CFLAGS) \
+	-lm \
 	$(NULL)
 
 common_ldadd = \
@@ -29,11 +30,7 @@ maintainr_SOURCES = \
 	maintainr-projectbox.h		\
 	maintainr-projectconf.c		\
 	maintainr-projectconf.h		\
-	maintainr-service-alerts.c	\
-	maintainr-service-alerts.h	\
 	maintainr-service.c		\
-	maintainr-service-gnomeapps.c	\
-	maintainr-service-gnomeapps.h	\
 	maintainr-service.h		\
 	maintainr-shell.c		\
 	maintainr-shell.h		\
