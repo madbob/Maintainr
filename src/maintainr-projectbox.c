@@ -235,6 +235,7 @@ static GtkWidget* do_head (MaintainrProjectbox *item)
 	GtkWidget *button;
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
 
 	item->priv->priority_icon = gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_xpm_data (yellow_xpm));
 	gtk_box_pack_start (GTK_BOX (hbox), item->priv->priority_icon, FALSE, FALSE, 0);
@@ -365,10 +366,15 @@ static GtkWidget* do_config (MaintainrProjectbox *item)
 	GtkWidget *button;
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
+	gtk_widget_set_halign (vbox, GTK_ALIGN_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (vbox), 10);
+	gtk_box_set_homogeneous (GTK_BOX (vbox), FALSE);
 
 	table = gtk_grid_new ();
+	gtk_grid_set_column_spacing (GTK_GRID (table), 5);
 	gtk_container_set_border_width (GTK_CONTAINER (table), 0);
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+	gtk_widget_set_hexpand (table, TRUE);
 
 	item->priv->project_name = gtk_entry_new ();
 	gtk_entry_set_text (GTK_ENTRY (item->priv->project_name), "Untitled");
@@ -409,7 +415,7 @@ static void maintainr_projectbox_init (MaintainrProjectbox *item)
 
 	item->priv = MAINTAINR_PROJECTBOX_GET_PRIVATE (item);
 
-	gtk_container_set_border_width (GTK_CONTAINER (item), 0);
+	gtk_container_set_border_width (GTK_CONTAINER (item), 10);
 	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (item), FALSE);
 
 	mainbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
