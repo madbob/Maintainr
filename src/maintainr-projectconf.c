@@ -211,7 +211,7 @@ gchar* maintainr_projectconf_write (MaintainrProjectconf *conf)
 	g_string_append_printf (ret, "\t<todos>\n");
 
 	for (iter = conf->priv->todos; iter; iter = iter->next) {
-		str = maintainr_todo_get_string (iter->data);
+		str = (gchar*) maintainr_todo_get_string (iter->data);
 		str = g_markup_escape_text (str, -1);
 
 		g_string_append_printf (ret,

@@ -18,6 +18,8 @@
 
 #include "maintainr-projectbox.h"
 #include "maintainr-todo.h"
+
+#define MINOR_ICONS
 #include "maintainr-icons.h"
 
 #define MAINTAINR_PROJECTBOX_GET_PRIVATE(obj)       (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MAINTAINR_PROJECTBOX_TYPE, MaintainrProjectboxPrivate))
@@ -232,7 +234,7 @@ static GtkWidget* do_head (MaintainrProjectbox *item)
 	GtkWidget *hbox;
 	GtkWidget *button;
 
-	hbox = gtk_hbox_new (FALSE, 0);
+	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 
 	item->priv->priority_icon = gtk_image_new_from_pixbuf (gdk_pixbuf_new_from_xpm_data (yellow_xpm));
 	gtk_box_pack_start (GTK_BOX (hbox), item->priv->priority_icon, FALSE, FALSE, 0);
@@ -241,13 +243,13 @@ static GtkWidget* do_head (MaintainrProjectbox *item)
 	gtk_box_pack_start (GTK_BOX (hbox), item->priv->label, TRUE, TRUE, 0);
 
 	button = gtk_button_new ();
-	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_EDIT, GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_icon_name ("emblem-system", GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Edit the project properties");
 	g_signal_connect_swapped (button, "clicked", G_CALLBACK (show_config), item);
 	gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
 	button = gtk_button_new ();
-	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_GOTO_TOP, GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_icon_name ("go-top", GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Move this project on top of the priority queue");
 	g_signal_connect (button, "clicked", G_CALLBACK (require_top), item);
 	gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
@@ -351,7 +353,7 @@ static GtkWidget* do_todos (MaintainrProjectbox *item)
 
 static GtkWidget* do_buttons (MaintainrProjectbox *item)
 {
-	item->priv->services_buttons = gtk_hbox_new (TRUE, 0);
+	item->priv->services_buttons = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	return item->priv->services_buttons;
 }
 
@@ -362,38 +364,38 @@ static GtkWidget* do_config (MaintainrProjectbox *item)
 	GtkWidget *hbox;
 	GtkWidget *button;
 
-	vbox = gtk_vbox_new (FALSE, 10);
+	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
 
-	table = gtk_table_new (3, 2, FALSE);
+	table = gtk_grid_new ();
 	gtk_container_set_border_width (GTK_CONTAINER (table), 0);
-	gtk_box_pack_start (GTK_BOX (vbox), table, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
 	item->priv->project_name = gtk_entry_new ();
 	gtk_entry_set_text (GTK_ENTRY (item->priv->project_name), "Untitled");
-	gtk_table_attach_defaults (GTK_TABLE (table), gtk_label_new ("Name"), 0, 1, 0, 1);
-	gtk_table_attach_defaults (GTK_TABLE (table), item->priv->project_name, 1, 2, 0, 1);
+	gtk_grid_attach (GTK_GRID (table), gtk_label_new ("Name"), 0, 0, 1, 1);
+	gtk_grid_attach (GTK_GRID (table), item->priv->project_name, 1, 0, 1, 1);
 
 	item->priv->priority = gtk_combo_box_text_new ();
 	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (item->priv->priority), NULL, "High");
 	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (item->priv->priority), NULL, "Medium");
 	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (item->priv->priority), NULL, "Low");
-	gtk_table_attach_defaults (GTK_TABLE (table), gtk_label_new ("Priority"), 0, 1, 1, 2);
-	gtk_table_attach_defaults (GTK_TABLE (table), item->priv->priority, 1, 2, 1, 2);
+	gtk_grid_attach (GTK_GRID (table), gtk_label_new ("Priority"), 0, 1, 1, 1);
+	gtk_grid_attach (GTK_GRID (table), item->priv->priority, 1, 1, 1, 1);
 
 	item->priv->services_confs = gtk_notebook_new ();
 	gtk_box_pack_start (GTK_BOX (vbox), item->priv->services_confs, TRUE, TRUE, 0);
 
-	hbox = gtk_hbox_new (TRUE, 10);
+	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
 	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
 	button = gtk_button_new ();
-	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_DELETE, GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_icon_name ("edit-delete", GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Remove this project from the list");
 	g_signal_connect (button, "clicked", G_CALLBACK (delete_project), item);
 	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 0);
 
 	button = gtk_button_new ();
-	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_APPLY, GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_icon_name ("document-save", GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Save settings and back to the main screen");
 	g_signal_connect (button, "clicked", G_CALLBACK (save_conf), item);
 	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 0);
@@ -410,7 +412,7 @@ static void maintainr_projectbox_init (MaintainrProjectbox *item)
 	gtk_container_set_border_width (GTK_CONTAINER (item), 0);
 	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (item), FALSE);
 
-	mainbox = gtk_vbox_new (FALSE, 0);
+	mainbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 	gtk_notebook_append_page (GTK_NOTEBOOK (item), mainbox, NULL);
 
 	gtk_box_pack_start (GTK_BOX (mainbox), do_head (item), FALSE, FALSE, 0);
@@ -439,11 +441,11 @@ static GtkWidget* do_service_action_panel (MaintainrProjectbox *box, MaintainrSe
 	GtkWidget *buttons;
 	GtkWidget *button;
 
-	frame = gtk_vbox_new (FALSE, 0);
+	frame = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 	panel = maintainr_service_action_panel (service);
 	gtk_box_pack_start (GTK_BOX (frame), panel, TRUE, TRUE, 0);
 
-	buttons = gtk_hbox_new (TRUE, 0);
+	buttons = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_pack_start (GTK_BOX (frame), buttons, FALSE, FALSE, 0);
 
 	sbuttons = maintainr_service_action_buttons (service);
@@ -454,7 +456,7 @@ static GtkWidget* do_service_action_panel (MaintainrProjectbox *box, MaintainrSe
 	}
 
 	button = gtk_button_new ();
-	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_OK, GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_icon_name ("document-save", GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Back to the main screen");
 	g_signal_connect_swapped (button, "clicked", G_CALLBACK (show_main), box);
 	gtk_box_pack_start (GTK_BOX (buttons), button, TRUE, TRUE, 0);
@@ -464,15 +466,20 @@ static GtkWidget* do_service_action_panel (MaintainrProjectbox *box, MaintainrSe
 
 static void todo_aging_color (MaintainrProjectbox *box)
 {
-	int days;
-	GdkColor color;
+	gdouble days;
+	GdkRGBA color;
 
-	days = maintainr_projectconf_get_top_since_days (box->priv->conf);
-	color.red = 65535;
-	color.green = 65535 - (days * 100);
-	color.blue = 65535 - (days * 100);
+	/*
+		Just to keep arithmetics in double...
+	*/
+	days = (gdouble) maintainr_projectconf_get_top_since_days (box->priv->conf);
 
-	gtk_widget_modify_bg (box->priv->todos, GTK_STATE_NORMAL, &color);
+	color.red = 1;
+	color.green = (65535 - (days * 100)) / 65535;
+	color.blue = (65535 - (days * 100)) / 65535;
+	color.alpha = 1;
+
+	gtk_widget_override_background_color (box->priv->todos, GTK_STATE_NORMAL, &color);
 }
 
 void maintainr_projectbox_set_conf (MaintainrProjectbox *box, MaintainrProjectconf *conf)

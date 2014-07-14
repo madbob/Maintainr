@@ -16,7 +16,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-static char *maintainr_icon [] = {
+#ifdef MAIN_ICON
+
+static const char *maintainr_icon [] = {
 "100 100 2715 2",
 "  	c #FFFFFF",
 ". 	c #FEFEFE",
@@ -2834,6 +2836,10 @@ static char *maintainr_icon [] = {
 "                                                                                                                                                                                                        ",
 "                                                                                                                                                                                                        "};
 
+#endif
+
+#ifdef MINOR_ICONS
+
 static const char *green_xpm [] = {
 "19 19 116 2",
 "  	c None",
@@ -3247,3 +3253,5 @@ static const char *yellow_xpm [] = {
 "      % '.D Y &.L *.).-.!.;.~.,.      ",
 "        & {.I L *.).].!.;.^.l         ",
 "            F J /.(._.| ..            "};
+
+#endif

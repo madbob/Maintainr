@@ -17,9 +17,11 @@
  */
 
 #include "common.h"
-#include "maintainr-icons.h"
 #include "maintainr-config.h"
 #include "maintainr-shell.h"
+
+#define MAIN_ICON
+#include "maintainr-icons.h"
 
 void save_position_and_close (GtkWidget *widget, GdkEvent *event, MaintainrConfig *config)
 {

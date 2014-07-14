@@ -28,7 +28,7 @@ struct _MaintainrShellPrivate {
 	MaintainrConfig *conf;
 };
 
-G_DEFINE_TYPE (MaintainrShell, maintainr_shell, GTK_TYPE_VBOX);
+G_DEFINE_TYPE (MaintainrShell, maintainr_shell, GTK_TYPE_BOX);
 
 static void set_empty_screen (MaintainrShell *item)
 {
@@ -239,27 +239,28 @@ static void maintainr_shell_init (MaintainrShell *item)
 	GtkWidget *scroll;
 
 	item->priv = MAINTAINR_SHELL_GET_PRIVATE (item);
+	gtk_orientable_set_orientation (GTK_ORIENTABLE (item), GTK_ORIENTATION_VERTICAL);
 	gtk_box_set_spacing (GTK_BOX (item), 0);
 	gtk_box_set_homogeneous (GTK_BOX (item), FALSE);
 	gtk_container_set_border_width (GTK_CONTAINER (item), 0);
 
-	head = gtk_vbox_new (TRUE, 0);
+	head = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_set_spacing (GTK_BOX (item), 0);
 	gtk_container_set_border_width (GTK_CONTAINER (head), 0);
 	gtk_box_pack_start (GTK_BOX (item), head, FALSE, FALSE, 0);
 
-	buttons = gtk_hbox_new (TRUE, 0);
+	buttons = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_container_set_border_width (GTK_CONTAINER (buttons), 0);
 	gtk_box_pack_start (GTK_BOX (head), buttons, FALSE, FALSE, 0);
 
 	button = gtk_button_new ();
-	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_icon_name ("list-add", GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Create a new project");
 	gtk_box_pack_start (GTK_BOX (buttons), button, TRUE, TRUE, 0);
 	g_signal_connect (button, "clicked", G_CALLBACK (add_new_project), item);
 
 	button = gtk_button_new ();
-	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_stock (GTK_STOCK_INDEX, GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_icon_name ("system-software-update", GTK_ICON_SIZE_BUTTON));
 	gtk_widget_set_tooltip_text (button, "Push on top the next project by priority");
 	gtk_box_pack_start (GTK_BOX (buttons), button, TRUE, TRUE, 0);
 	g_signal_connect (button, "clicked", G_CALLBACK (skip_next_project), item);
@@ -268,14 +269,14 @@ static void maintainr_shell_init (MaintainrShell *item)
 	g_signal_connect (search, "key-release-event", G_CALLBACK (do_filter), item);
 	gtk_box_pack_start (GTK_BOX (head), search, FALSE, FALSE, 0);
 
-	gtk_box_pack_start (GTK_BOX (item), gtk_hseparator_new (), FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (item), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 0);
 
 	scroll = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_box_pack_start (GTK_BOX (item), scroll, TRUE, TRUE, 0);
 
-	item->priv->projects_box = gtk_vbox_new (FALSE, 0);
-	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scroll), item->priv->projects_box);
+	item->priv->projects_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+	gtk_container_add (GTK_CONTAINER (scroll), item->priv->projects_box);
 
 	item->priv->status = gtk_statusbar_new ();
 	gtk_box_pack_start (GTK_BOX (item), item->priv->status, FALSE, FALSE, 0);

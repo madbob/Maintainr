@@ -22,6 +22,7 @@ AC_PREREQ([2.59])
 AC_INIT([maintainr], [maintainr_version], [], [maintainr])
 
 AM_INIT_AUTOMAKE([1.10])
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 GNOME_COMMON_INIT
 GNOME_COMPILE_WARNINGS

@@ -42,12 +42,12 @@ typedef struct _MaintainrShellClass	MaintainrShellClass;
 typedef struct _MaintainrShellPrivate	MaintainrShellPrivate;
 
 struct _MaintainrShell {
-	GtkVBox			parent;
+	GtkBox			parent;
 	MaintainrShellPrivate	*priv;
 };
 
 struct _MaintainrShellClass {
-	GtkVBoxClass		parent_class;
+	GtkBoxClass		parent_class;
 };
 
 GType		maintainr_shell_get_type ();

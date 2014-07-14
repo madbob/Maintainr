@@ -161,7 +161,7 @@ void maintainr_config_handle_backup ()
 
 	path = conf_file_path ();
 	if (access (path, F_OK) == 0)
-		g_thread_create (manage_backups, path, FALSE, NULL);
+		g_thread_new (NULL, manage_backups, path);
 }
 
 void read_application_configuration (MaintainrConfig *conf, xmlNode *node)
